@@ -1,0 +1,53 @@
+.TH "grammar2arbitrary" "1" "July 2026" "v0.1.0" "User Commands"
+.SH NAME
+grammar2arbitrary \- Generate fast-check arbitraries from a grammar
+.SH SYNOPSIS
+.B grammar2arbitrary
+--base \fI<name>\fR
+--export \fI<name>\fR
+--inFile \fI<file>\fR
+--outFile \fI<file>\fR
+.SH DESCRIPTION
+.P
+Automatically generate a fast-check arbitrary from a grammer file.
+Supports Ohm languages for writing grammars.
+.P
+Need more help? Found a bug? Missing something? See:
+.br
+<https://github.com/ericcornelissen/grammar2arbitrary>
+.SH OPTIONS
+.TP
+.B --help
+Show the help message.
+.TP
+.B -b, --base \fI<name>\fR
+The grammar identifier to start generation from.
+.TP
+.B -e, --export \fI<name>\fR
+The name of the exported arbitrary.
+.TP
+.B -i, --inFile \fI<file>\fR
+The grammar file to read from.
+.TP
+.B -o, --outFile \fI<file>\fR
+The JavaScript file to write to.
+.TP
+.B --version
+Show the version information.
+.SH EXIT STATUS
+.TP
+.B 0
+Arbitrary generated successfully.
+.TP
+.B 1
+An error occured.
+.SH AUTHOR
+.P
+Written by Eric Cornelissen.
+.SH COPYRIGHT
+.P
+Copyright \(co 2026 Eric Cornelissen
+.P
+Apache License, Version 2.0
+.br
+<https://www.apache.org/licenses/LICENSE-2.0.html>

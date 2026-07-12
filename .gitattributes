@@ -1,0 +1,4 @@
+# Configuration file for git (https://git-scm.com/docs/gitattributes)
+
+* text=auto
+package-lock.json -diff

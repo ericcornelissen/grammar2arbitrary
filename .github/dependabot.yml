@@ -1,0 +1,24 @@
+# Configuration file for Dependabot (https://github.com/dependabot)
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    open-pull-requests-limit: 1
+    schedule:
+      interval: daily
+      time: "03:00"
+    cooldown:
+      default-days: 7
+    labels:
+      - dependencies
+  - package-ecosystem: npm
+    directory: /
+    open-pull-requests-limit: 1
+    schedule:
+      interval: daily
+      time: "03:00"
+    cooldown:
+      default-days: 7
+    labels:
+      - dependencies

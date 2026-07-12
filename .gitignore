@@ -1,0 +1,6 @@
+# Ignore file for git (https://git-scm.com/docs/gitignore)
+
+node_modules/
+testdata/*.js
+dist.js
+npm-debug.log*
