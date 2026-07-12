@@ -30,7 +30,7 @@
     "generator"
   ],
   "dependencies": {
-    "ohm-js": "^17.0.3"
+    "ohm-js": "^17.5.0"
   },
   "peerDependencies": {
     "fast-check": "^4.8.0"
