@@ -52,7 +52,7 @@ Summary:
 
 Flags:
   --help                Output this help message.
-  --base <name>         The grammar identifier to start generation from.
+  --base <name>         The grammar rule to start generation from. Can be repeated.
   --export <name>       The name of the exported arbitrary.
   --inFile <file>       The grammar file to read from.
   --outFile <file>      The JavaScript file to write to.
