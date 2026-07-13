@@ -30,13 +30,19 @@ jobs:
           node-version-file: .nvmrc
       - name: Install dependencies
         run: npm clean-install
-      - name: Check ${WHAT}
+      - name: Check ${{ matrix.what }}
         env:
           WHAT: ${{ matrix.what }}
         run: npm run "check:${WHAT}"
   test:
-    name: test
+    name: ${{ matrix.what }}
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        what:
+          - bin
+          - unit
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -49,5 +55,7 @@ jobs:
           node-version-file: .nvmrc
       - name: Install dependencies
         run: npm clean-install
-      - name: Test
-        run: npm run test
+      - name: Test ${{ matrix.what }}
+        env:
+          WHAT: ${{ matrix.what }}
+        run: npm run "test:${WHAT}"
