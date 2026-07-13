@@ -36,6 +36,8 @@
     "fast-check": "^4.8.0"
   },
   "devDependencies": {
+    "eslint": "10.6.0",
+    "eslint-node-test": "0.2.0",
     "npm-run-all2": "9.0.2",
     "prettier": "3.9.4",
     "semver": "7.8.5"
@@ -43,7 +45,9 @@
   "scripts": {
     "_prettier": "prettier  --ignore-path .gitignore '**/*.{js,json,md,yml}'",
     "check": "npm-run-all check:*",
+    "check:config": "node script/check-eslint-rules.js",
     "check:formatting": "npm run _prettier -- --check",
+    "check:js": "eslint --config .eslint.js '*.js'",
     "clean": "git clean -fx node_modules/ testdata/*.js",
     "format": "npm run _prettier -- --write",
     "test": "npm-run-all test:*",

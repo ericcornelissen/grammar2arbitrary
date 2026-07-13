@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as assert from "node:assert";
+import * as assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { rmSync as rm } from "node:fs";
 import { test } from "node:test";
