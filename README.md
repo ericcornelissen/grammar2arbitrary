@@ -26,6 +26,8 @@ For more information
 grammar2arbitrary --help
 ```
 
+[grammar]: #grammars
+
 ## Grammars
 
 The only supported grammer is [Ohm], read more in [our Ohm docs].

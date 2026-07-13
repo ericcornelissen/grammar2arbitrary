@@ -2,12 +2,12 @@
 
 // SPDX-License-Identifier: Apache-2.0
 
+import console from "node:console";
 import { readFileSync, writeFileSync } from "node:fs";
 import { argv, exit, versions } from "node:process";
 import { parseArgs } from "node:util";
 
-import * as ohm from "ohm-js";
-
+import { grammer2arbitrary } from "./main.js";
 import manifest from "./package.json" with { type: "json" };
 
 /* --- Args ----------------------------------------------------------------- */
@@ -29,7 +29,7 @@ const args = parseArgs({
 });
 
 const {
-  base,
+  base: baseRules,
   export: exportName,
   help,
   inFile,
@@ -43,7 +43,7 @@ if (version) {
   exit(0);
 }
 
-if (help || !base || !exportName || !inFile || !outFile) {
+if (help || !baseRules || !exportName || !inFile || !outFile) {
   console.log(`grammar2arbitrary [--help] [--version] --base NAME
   --export NAME --inFile FILE.ohm --outFile FILE.js
 
@@ -65,116 +65,15 @@ https://github.com/ericcornelissen/grammar2arbitrary`);
 
 /* --- Main ----------------------------------------------------------------- */
 
-const raw = readFileSync(inFile, "utf-8");
-const grammar = ohm.grammar(raw);
+try {
+  const raw = readFileSync(inFile, "utf-8");
+  const arbitrary = grammer2arbitrary({ raw, exportName, baseRules });
+  const out = `// Generated with ${manifest.name}@${manifest.version}
 
-const rules = new Map();
-for (const [name, rule] of Object.entries(grammar.rules)) {
-  const arbitrary = termToArbitrary(rule.body);
-  const modifier = parseModifier(rule.description);
-  rules.set(name, `${arbitrary}${modifier}`);
-}
-
-if (!base.every((name) => rules.has(name))) {
-  console.log(`Not all bases are in the grammar.
-
-Available rule(s): ${Array.from(rules.keys()).join(", ")}
-Specified base(s): ${base.join(", ")}`);
+${arbitrary}`;
+  writeFileSync(outFile, out);
+  exit(0);
+} catch (error) {
+  console.error(error);
   exit(1);
-}
-
-const script = `// Generated with ${manifest.name}@${manifest.version}
-
-import * as fc from "fast-check";
-
-var DEFAULT_OPTS = { size: "small" };
-
-export function ${exportName}(opts=DEFAULT_OPTS) {
-	var arbitrary = Symbol();
-	return fc.letrec((tie) => {
-		return {
-			[arbitrary]: fc.oneof(
-				{ depthSize: opts.size || DEFAULT_OPTS.size },
-				${base.map((name) => `tie("${name}")`).join(",\n\t\t\t\t")}
-			),
-			${Array.from(rules.entries())
-        .map(([name, arbitrary]) => `["${name}"]: ${arbitrary}`)
-        .join(",\n\t\t\t")}
-		};
-	})[arbitrary];
-}
-`;
-
-writeFileSync(outFile, script);
-exit(0);
-
-/* --- Helpers -------------------------------------------------------------- */
-
-function parseModifier(raw) {
-  switch (true) {
-    case /^NOT /.test(raw): {
-      const exclude = raw.replace(/^NOT\s+/, "");
-      if (!/^"\w+"(,\s*"\w+")*$/.test(exclude)) {
-        throw new Error(`invalid 'NOT "a", "b", ...' modifier: '${raw}'`);
-      }
-
-      return `.filter(s => ![${exclude}].includes(s))`;
-    }
-    default: {
-      return "";
-    }
-  }
-}
-
-function termToArbitrary(term) {
-  switch (true) {
-    case term instanceof ohm.pexprs.Alt: {
-      const terms = [];
-      for (const t of term.terms) {
-        terms.push(termToArbitrary(t));
-      }
-
-      return `fc.oneof(${terms})`;
-    }
-    case term instanceof ohm.pexprs.Apply: {
-      return `tie("${term.ruleName}")`;
-    }
-    case term instanceof ohm.pexprs.Not: {
-      throw new Error("generating a negative lookahead (~) is not supported");
-    }
-    case term instanceof ohm.pexprs.Opt: {
-      const arbitrary = termToArbitrary(term.expr);
-      return `fc.option(${arbitrary}, { nil: "" })`;
-    }
-    case term instanceof ohm.pexprs.Param: {
-      throw new Error(
-        "generating parameterized rules (ruleName<arg>) is not supported",
-      );
-    }
-    case term instanceof ohm.pexprs.Plus: {
-      const arbitrary = termToArbitrary(term.expr);
-      return `fc.array(${arbitrary}, { minLength: 1 }).map(array => array.join(""))`;
-    }
-    case term instanceof ohm.pexprs.Seq: {
-      const factors = [];
-      for (const t of term.factors) {
-        factors.push(termToArbitrary(t));
-      }
-
-      return factors.length > 1
-        ? `fc.tuple(${factors.join(",")}).map(a => a.join(""))`
-        : factors[0];
-    }
-    case term instanceof ohm.pexprs.Star: {
-      const expr = termToArbitrary(term.expr);
-      return `fc.array(${expr}, { minLength: 0 }).map(array => array.join(""))`;
-    }
-    case term instanceof ohm.pexprs.Terminal: {
-      return `fc.constant(${term})`;
-    }
-    default: {
-      console.debug(term);
-      throw new Error("unknown term");
-    }
-  }
 }

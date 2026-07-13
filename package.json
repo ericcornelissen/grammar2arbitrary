@@ -46,7 +46,9 @@
     "check:formatting": "npm run _prettier -- --check",
     "clean": "git clean -fx node_modules/ testdata/*.js",
     "format": "npm run _prettier -- --write",
-    "test": "node --test test.js",
+    "test": "npm-run-all test:*",
+    "test:bin": "node --test bin.test.js",
+    "test:unit": "node --test main.test.js",
     "verify": "npm run check && npm run test",
     "version-bump": "node script/version-bump.js"
   }
