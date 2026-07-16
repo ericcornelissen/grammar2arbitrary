@@ -3,14 +3,13 @@
 grammar2arbitrary \- Generate fast-check arbitraries from a grammar
 .SH SYNOPSIS
 .B grammar2arbitrary
---base \fI<name>\fR
 --export \fI<name>\fR
 --inFile \fI<file>\fR
 --outFile \fI<file>\fR
 .SH DESCRIPTION
 .P
 Automatically generate a fast-check arbitrary from a grammer file.
-Supports Ohm languages for writing grammars.
+Supports the Ohm languages for writing grammars.
 .P
 Need more help? Found a bug? Missing something? See:
 .br
@@ -21,7 +20,9 @@ Need more help? Found a bug? Missing something? See:
 Show the help message.
 .TP
 .B -b, --base \fI<name>\fR
-The grammar rule to start generation from. Can be repeated.
+The grammar rule to start generation from.
+Defaults to the first rule in the grammar.
+Can be repeated.
 .TP
 .B -e, --export \fI<name>\fR
 The name of the exported arbitrary.
