@@ -169,7 +169,7 @@ test("termToArbitrary", async (t) => {
     for (const [name, testcase] of Object.entries(testdata)) {
       await t.test(name, () => {
         const got = termToArbitrary(testcase.term);
-        assert.equal(got, testcase.want);
+        assert.equal(got.toString(), testcase.want);
       });
     }
   });

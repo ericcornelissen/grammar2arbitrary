@@ -59,22 +59,16 @@ export function parseModifier(raw) {
 export function termToArbitrary(term) {
   switch (true) {
     case term instanceof ohm.pexprs.Alt: {
-      const terms = [];
-      for (const t of term.terms) {
-        terms.push(termToArbitrary(t));
-      }
-
-      return `fc.oneof(${terms.join(", ")})`;
+      return new OneOf(term.terms.map(termToArbitrary));
     }
     case term instanceof ohm.pexprs.Apply: {
-      return `tie("${term.ruleName}")`;
+      return new Apply(term.ruleName);
     }
     case term instanceof ohm.pexprs.Not: {
       throw new Error("generating a negative lookahead (~) is not supported");
     }
     case term instanceof ohm.pexprs.Opt: {
-      const arbitrary = termToArbitrary(term.expr);
-      return `fc.option(${arbitrary}, { nil: "" })`;
+      return new Optional(termToArbitrary(term.expr));
     }
     case term instanceof ohm.pexprs.Param: {
       throw new Error(
@@ -82,29 +76,101 @@ export function termToArbitrary(term) {
       );
     }
     case term instanceof ohm.pexprs.Plus: {
-      const arbitrary = termToArbitrary(term.expr);
-      return `fc.array(${arbitrary}, { minLength: 1 }).map(array => array.join(""))`;
+      return new Repeat(termToArbitrary(term.expr), { min: 1 });
     }
     case term instanceof ohm.pexprs.Seq: {
-      const factors = [];
-      for (const t of term.factors) {
-        factors.push(termToArbitrary(t));
-      }
-
-      return factors.length > 1
-        ? `fc.tuple(${factors.join(", ")}).map(array => array.join(""))`
-        : factors[0];
+      return new Sequence(term.factors.map(termToArbitrary));
     }
     case term instanceof ohm.pexprs.Star: {
-      const expr = termToArbitrary(term.expr);
-      return `fc.array(${expr}, { minLength: 0 }).map(array => array.join(""))`;
+      return new Repeat(termToArbitrary(term.expr), { min: 0 });
     }
     case term instanceof ohm.pexprs.Terminal: {
-      return `fc.constant(${term})`;
+      return new Terminal(term.obj);
     }
     default: {
       console.debug(term);
       throw new Error("unknown term");
     }
+  }
+}
+
+class Apply {
+  #identifier;
+
+  constructor(identifier) {
+    this.#identifier = identifier;
+  }
+
+  toString() {
+    const identifier = this.#identifier;
+    return `tie("${identifier}")`;
+  }
+}
+
+class OneOf {
+  #options;
+
+  constructor(options) {
+    this.#options = options;
+  }
+
+  toString() {
+    const options = this.#options.map((option) => option.toString()).join(", ");
+    return `fc.oneof(${options})`;
+  }
+}
+
+class Optional {
+  #option;
+
+  constructor(option) {
+    this.#option = option;
+  }
+
+  toString() {
+    const option = this.#option;
+    return `fc.option(${option}, { nil: "" })`;
+  }
+}
+
+class Repeat {
+  #min;
+  #subject;
+
+  constructor(subject, { min }) {
+    this.#min = min;
+    this.#subject = subject;
+  }
+
+  toString() {
+    const min = this.#min;
+    const subject = this.#subject;
+    return `fc.array(${subject}, { minLength: ${min} }).map(array => array.join(""))`;
+  }
+}
+
+class Sequence {
+  #subjects;
+
+  constructor(subjects) {
+    this.#subjects = subjects;
+  }
+
+  toString() {
+    const subjects = this.#subjects;
+    return `fc.tuple(${subjects.join(", ")}).map(array => array.join(""))`;
+  }
+}
+
+class Terminal {
+  #term;
+
+  constructor(term) {
+    this.#term = term;
+  }
+
+  toString() {
+    const term = this.#term;
+    return `fc.constant("${term}")`;
   }
 }
