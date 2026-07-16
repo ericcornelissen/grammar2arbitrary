@@ -6,7 +6,17 @@ import { test } from "node:test";
 
 import * as ohm from "ohm-js";
 
-import { grammer2arbitrary, parseModifier, termToArbitrary } from "./main.js";
+import {
+  grammer2arbitrary,
+  parseModifier,
+  termToArbitrary,
+  Apply,
+  OneOf,
+  Optional,
+  Repeat,
+  Sequence,
+  Terminal,
+} from "./main.js";
 
 test("grammer2arbitrary", async (t) => {
   const raw = await fs.readFile("./testdata/example.ohm");
@@ -90,25 +100,25 @@ test("termToArbitrary", async (t) => {
     const testdata = {
       terminal: {
         term: new ohm.pexprs.Terminal("foobar"),
-        want: `fc.constant("foobar")`,
+        want: new Terminal("foobar"),
       },
       "rule application": {
         term: new ohm.pexprs.Apply("ruleFoobar"),
-        want: `tie("ruleFoobar")`,
+        want: new Apply("ruleFoobar"),
       },
       "sequence of terminals": {
         term: new ohm.pexprs.Seq([
           new ohm.pexprs.Terminal("foo"),
           new ohm.pexprs.Terminal("bar"),
         ]),
-        want: `fc.tuple(fc.constant("foo"), fc.constant("bar")).map(array => array.join(""))`,
+        want: new Sequence([new Terminal("foo"), new Terminal("bar")]),
       },
       "sequence of rules": {
         term: new ohm.pexprs.Seq([
           new ohm.pexprs.Apply("ruleFoo"),
           new ohm.pexprs.Apply("ruleBar"),
         ]),
-        want: `fc.tuple(tie("ruleFoo"), tie("ruleBar")).map(array => array.join(""))`,
+        want: new Sequence([new Apply("ruleFoo"), new Apply("ruleBar")]),
       },
       "sequence of rules and terminals": {
         term: new ohm.pexprs.Seq([
@@ -116,21 +126,25 @@ test("termToArbitrary", async (t) => {
           new ohm.pexprs.Terminal("-"),
           new ohm.pexprs.Apply("bar"),
         ]),
-        want: `fc.tuple(tie("foo"), fc.constant("-"), tie("bar")).map(array => array.join(""))`,
+        want: new Sequence([
+          new Apply("foo"),
+          new Terminal("-"),
+          new Apply("bar"),
+        ]),
       },
       "alteration of terminals": {
         term: new ohm.pexprs.Alt([
           new ohm.pexprs.Terminal("foo"),
           new ohm.pexprs.Terminal("bar"),
         ]),
-        want: `fc.oneof(fc.constant("foo"), fc.constant("bar"))`,
+        want: new OneOf([new Terminal("foo"), new Terminal("bar")]),
       },
       "alteration of rules": {
         term: new ohm.pexprs.Alt([
           new ohm.pexprs.Apply("ruleFoo"),
           new ohm.pexprs.Apply("ruleBar"),
         ]),
-        want: `fc.oneof(tie("ruleFoo"), tie("ruleBar"))`,
+        want: new OneOf([new Apply("ruleFoo"), new Apply("ruleBar")]),
       },
       "alteration of rules and terminals": {
         term: new ohm.pexprs.Alt([
@@ -138,38 +152,43 @@ test("termToArbitrary", async (t) => {
           new ohm.pexprs.Terminal("-"),
           new ohm.pexprs.Apply("bar"),
         ]),
-        want: `fc.oneof(tie("foo"), fc.constant("-"), tie("bar"))`,
+        want: new OneOf([
+          new Apply("foo"),
+          new Terminal("-"),
+          new Apply("bar"),
+        ]),
       },
       "0-or-1 terminal": {
         term: new ohm.pexprs.Opt(new ohm.pexprs.Terminal("foobar")),
         want: `fc.option(fc.constant("foobar"), { nil: "" })`,
+        want: new Optional(new Terminal("foobar")),
       },
       "0-or-1 rule application": {
         term: new ohm.pexprs.Opt(new ohm.pexprs.Apply("ruleFoobar")),
-        want: `fc.option(tie("ruleFoobar"), { nil: "" })`,
+        want: new Optional(new Apply("ruleFoobar")),
       },
       "0-or-more of terminals": {
         term: new ohm.pexprs.Star(new ohm.pexprs.Terminal("foobar")),
-        want: `fc.array(fc.constant("foobar"), { minLength: 0 }).map(array => array.join(""))`,
+        want: new Repeat(new Terminal("foobar"), { min: 0 }),
       },
       "0-or-more of rule applications": {
         term: new ohm.pexprs.Star(new ohm.pexprs.Apply("ruleFoo")),
-        want: `fc.array(tie("ruleFoo"), { minLength: 0 }).map(array => array.join(""))`,
+        want: new Repeat(new Apply("ruleFoo"), { min: 0 }),
       },
       "1-or-more of terminal": {
         term: new ohm.pexprs.Plus(new ohm.pexprs.Terminal("foobar")),
-        want: `fc.array(fc.constant("foobar"), { minLength: 1 }).map(array => array.join(""))`,
+        want: new Repeat(new Terminal("foobar"), { min: 1 }),
       },
-      "1-or-more of terminal": {
+      "1-or-more of rule applications": {
         term: new ohm.pexprs.Plus(new ohm.pexprs.Apply("ruleBar")),
-        want: `fc.array(tie("ruleBar"), { minLength: 1 }).map(array => array.join(""))`,
+        want: new Repeat(new Apply("ruleBar"), { min: 1 }),
       },
     };
 
     for (const [name, testcase] of Object.entries(testdata)) {
       await t.test(name, () => {
         const got = termToArbitrary(testcase.term);
-        assert.equal(got.toString(), testcase.want);
+        assert.ok(got.equals(testcase.want));
       });
     }
   });
@@ -195,6 +214,84 @@ test("termToArbitrary", async (t) => {
         assert.throws(() => {
           termToArbitrary(testcase.term);
         }, testcase.want);
+      });
+    }
+  });
+});
+
+test("arbitraries", async (t) => {
+  await t.test("toString", async (t) => {
+    const testdata = {
+      terminal: {
+        term: new Terminal("foobar"),
+        want: `fc.constant("foobar")`,
+      },
+      "rule application": {
+        term: new Apply("ruleFoobar"),
+        want: `tie("ruleFoobar")`,
+      },
+      "sequence of terminals": {
+        term: new Sequence([new Terminal("foo"), new Terminal("bar")]),
+        want: `fc.tuple(fc.constant("foo"), fc.constant("bar")).map(array => array.join(""))`,
+      },
+      "sequence of rules": {
+        term: new Sequence([new Apply("ruleFoo"), new Apply("ruleBar")]),
+        want: `fc.tuple(tie("ruleFoo"), tie("ruleBar")).map(array => array.join(""))`,
+      },
+      "sequence of rules and terminals": {
+        term: new Sequence([
+          new Apply("foo"),
+          new Terminal("-"),
+          new Apply("bar"),
+        ]),
+        want: `fc.tuple(tie("foo"), fc.constant("-"), tie("bar")).map(array => array.join(""))`,
+      },
+      "alteration of terminals": {
+        term: new OneOf([new Terminal("foo"), new Terminal("bar")]),
+        want: `fc.oneof(fc.constant("foo"), fc.constant("bar"))`,
+      },
+      "alteration of rules": {
+        term: new OneOf([new Apply("ruleFoo"), new Apply("ruleBar")]),
+        want: `fc.oneof(tie("ruleFoo"), tie("ruleBar"))`,
+      },
+      "alteration of rules and terminals": {
+        term: new OneOf([
+          new Apply("foo"),
+          new Terminal("-"),
+          new Apply("bar"),
+        ]),
+        want: `fc.oneof(tie("foo"), fc.constant("-"), tie("bar"))`,
+      },
+      "0-or-1 terminal": {
+        term: new Optional(new Terminal("foobar")),
+        want: `fc.option(fc.constant("foobar"), { nil: "" })`,
+      },
+      "0-or-1 rule application": {
+        term: new Optional(new Apply("ruleFoobar")),
+        want: `fc.option(tie("ruleFoobar"), { nil: "" })`,
+      },
+      "0-or-more of terminals": {
+        term: new Repeat(new Terminal("foobar"), { min: 0 }),
+        want: `fc.array(fc.constant("foobar"), { minLength: 0 }).map(array => array.join(""))`,
+      },
+      "0-or-more of rule applications": {
+        term: new Repeat(new Apply("ruleFoo"), { min: 0 }),
+        want: `fc.array(tie("ruleFoo"), { minLength: 0 }).map(array => array.join(""))`,
+      },
+      "1-or-more of terminal": {
+        term: new Repeat(new Terminal("foobar"), { min: 1 }),
+        want: `fc.array(fc.constant("foobar"), { minLength: 1 }).map(array => array.join(""))`,
+      },
+      "1-or-more of terminal": {
+        term: new Repeat(new Apply("ruleBar"), { min: 1 }),
+        want: `fc.array(tie("ruleBar"), { minLength: 1 }).map(array => array.join(""))`,
+      },
+    };
+
+    for (const [name, testcase] of Object.entries(testdata)) {
+      await t.test(name, () => {
+        const got = testcase.term.toString();
+        assert.equal(got, testcase.want);
       });
     }
   });

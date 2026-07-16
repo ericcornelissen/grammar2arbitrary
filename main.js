@@ -94,7 +94,7 @@ export function termToArbitrary(term) {
   }
 }
 
-class Apply {
+export class Apply {
   #identifier;
 
   constructor(identifier) {
@@ -105,9 +105,13 @@ class Apply {
     const identifier = this.#identifier;
     return `tie("${identifier}")`;
   }
+
+  equals(that) {
+    return this.#identifier === that.#identifier;
+  }
 }
 
-class OneOf {
+export class OneOf {
   #options;
 
   constructor(options) {
@@ -118,9 +122,18 @@ class OneOf {
     const options = this.#options.map((option) => option.toString()).join(", ");
     return `fc.oneof(${options})`;
   }
+
+  equals(that) {
+    return (
+      this.#options.length === that.#options.length &&
+      this.#options.every((option, index) =>
+        option.equals(that.#options[index]),
+      )
+    );
+  }
 }
 
-class Optional {
+export class Optional {
   #option;
 
   constructor(option) {
@@ -131,9 +144,13 @@ class Optional {
     const option = this.#option;
     return `fc.option(${option}, { nil: "" })`;
   }
+
+  equals(that) {
+    return this.#option.equals(that.#option);
+  }
 }
 
-class Repeat {
+export class Repeat {
   #min;
   #subject;
 
@@ -147,9 +164,13 @@ class Repeat {
     const subject = this.#subject;
     return `fc.array(${subject}, { minLength: ${min} }).map(array => array.join(""))`;
   }
+
+  equals(that) {
+    return this.#min === that.#min && this.#subject.equals(that.#subject);
+  }
 }
 
-class Sequence {
+export class Sequence {
   #subjects;
 
   constructor(subjects) {
@@ -160,9 +181,18 @@ class Sequence {
     const subjects = this.#subjects;
     return `fc.tuple(${subjects.join(", ")}).map(array => array.join(""))`;
   }
+
+  equals(that) {
+    return (
+      this.#subjects.length === that.#subjects.length &&
+      this.#subjects.every((option, index) =>
+        option.equals(that.#subjects[index]),
+      )
+    );
+  }
 }
 
-class Terminal {
+export class Terminal {
   #term;
 
   constructor(term) {
@@ -172,5 +202,9 @@ class Terminal {
   toString() {
     const term = this.#term;
     return `fc.constant("${term}")`;
+  }
+
+  equals(that) {
+    return this.#term === that.#term;
   }
 }
