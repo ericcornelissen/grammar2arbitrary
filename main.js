@@ -6,10 +6,18 @@ export function grammer2arbitrary({ baseRules, exportName, raw }) {
   const grammar = ohm.grammar(raw);
 
   const rules = new Map();
+  let firstRule = null;
   for (const [name, rule] of Object.entries(grammar.rules)) {
     const arbitrary = termToArbitrary(rule.body).optimized();
     const modifier = parseModifier(rule.description);
     rules.set(name, `${arbitrary}${modifier}`);
+    if (!firstRule && rule.description !== null) {
+      firstRule = name;
+    }
+  }
+
+  if (!baseRules) {
+    baseRules = [firstRule];
   }
 
   if (!baseRules.every((baseRule) => rules.has(baseRule))) {

@@ -43,8 +43,8 @@ if (version) {
   exit(0);
 }
 
-if (help || !baseRules || !exportName || !inFile || !outFile) {
-  console.log(`grammar2arbitrary [--help] [--version] --base NAME
+if (help || !exportName || !inFile || !outFile) {
+  console.log(`grammar2arbitrary [--help] [--version] [--base NAME]
   --export NAME --inFile FILE.ohm --outFile FILE.js
 
 Summary:
@@ -52,7 +52,8 @@ Summary:
 
 Flags:
   --help                Output this help message.
-  --base <name>         The grammar rule to start generation from. Can be repeated.
+  --base <name>         The grammar rule to start generation from. Defaults to
+                          the first rule in the grammar. Can be repeated.
   --export <name>       The name of the exported arbitrary.
   --inFile <file>       The grammar file to read from.
   --outFile <file>      The JavaScript file to write to.
