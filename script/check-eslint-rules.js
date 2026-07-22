@@ -6,6 +6,7 @@ const configModule = await import("../.eslint.js");
 const configArray = configModule.default;
 
 const all = new Set();
+const docs = new Map();
 const configured = new Set();
 
 for (const config of configArray) {
@@ -16,6 +17,11 @@ for (const config of configArray) {
       if (!rule?.meta?.deprecated) {
         const ruleId = pluginName ? `${pluginName}/${ruleName}` : ruleName;
         all.add(ruleId);
+
+        const documentation = rule?.meta?.docs?.url;
+        if (documentation) {
+          docs.set(ruleId, documentation);
+        }
       }
     }
   }
@@ -27,7 +33,13 @@ for (const config of configArray) {
 
 const unconfigured = all.difference(configured);
 if (unconfigured.size > 0) {
-  console.log(`'${[...unconfigured].join("'\n'")}'`);
+  for (const rule of unconfigured) {
+    const text = `'${rule}'`;
+    const documentation = docs.has(rule)
+      ? `(\u001B]8;;${docs.get(rule)}\u001B\\docs\u001B]8;;\u001B\\)`
+      : "";
+    console.log(text, documentation);
+  }
   console.log("");
   console.log(
     unconfigured.size,
