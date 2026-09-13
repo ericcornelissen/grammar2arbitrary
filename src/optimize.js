@@ -30,7 +30,13 @@ export function optimize(rule) {
     }
     case rule instanceof Optional: {
       const constraint = rule.constraint;
-      const subject = optimize(rule.option);
+
+      let subject = rule.option;
+      while (subject instanceof Optional) {
+        subject = subject.option;
+      }
+      subject = optimize(subject);
+
       return new Optional(subject).withConstraint(constraint);
     }
     case rule instanceof Repeat: {

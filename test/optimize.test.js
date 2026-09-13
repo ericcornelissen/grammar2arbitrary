@@ -94,6 +94,10 @@ suite("optimize", () => {
       ),
       want: new Optional(new Terminal("foobar")),
     },
+    "Optional of Optional": {
+      term: new Optional(new Optional(new Terminal("foobar"))),
+      want: new Optional(new Terminal("foobar")),
+    },
 
     /* Repeat */
     "Repeat without constraint": {
