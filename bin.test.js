@@ -9,7 +9,10 @@ import * as fc from "fast-check";
 
 test("testdata/example.ohm", async () => {
   rm("testdata/example.js", { force: true });
-  spawnSync("./bin.js", [
+
+  const { status } = spawnSync("./bin.js", [
+    "--base",
+    "Expression",
     "--export",
     "example",
     "--inFile",
@@ -17,6 +20,7 @@ test("testdata/example.ohm", async () => {
     "--outFile",
     "testdata/example.js",
   ]);
+  assert.equal(status, 0);
 
   const { example } = await import("./testdata/example.js");
   fc.assert(

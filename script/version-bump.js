@@ -24,7 +24,7 @@ if (currentBranch !== "main") {
 
 const status = execSync("git status --porcelain").toString().trim();
 if (status !== "") {
-  console.log("work space is dirty, commit or stash changes first");
+  console.log("workspace is dirty, commit or stash changes first");
   exit(1);
 }
 
