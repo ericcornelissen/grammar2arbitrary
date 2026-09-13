@@ -3,7 +3,7 @@
 import * as assert from "node:assert/strict";
 import { suite, test } from "node:test";
 
-import { Not } from "../src/constraints.js";
+import { None, Not } from "../src/constraints.js";
 
 import {
   Apply,
@@ -27,6 +27,26 @@ suite("terms", () => {
       "Apply and Apply, different": {
         a: new Apply("Foo"),
         b: new Apply("Bar"),
+        want: false,
+      },
+      "Apply with constraint and Apply": {
+        a: new Apply("Foo").withConstraint(new Not(["bar"])),
+        b: new Apply("Foo"),
+        want: false,
+      },
+      "Apply and Apply with constraint": {
+        a: new Apply("Foo"),
+        b: new Apply("Foo").withConstraint(new Not(["bar"])),
+        want: false,
+      },
+      "Apply with constraint and Apply with constraint, identical": {
+        a: new Apply("Foo").withConstraint(new Not(["bar"])),
+        b: new Apply("Foo").withConstraint(new Not(["bar"])),
+        want: true,
+      },
+      "Apply with constraint and Apply with constraint, different": {
+        a: new Apply("Foo").withConstraint(new Not(["bar"])),
+        b: new Apply("Foo").withConstraint(new Not(["baz"])),
         want: false,
       },
       "Apply and ConstantFrom": {
@@ -71,6 +91,28 @@ suite("terms", () => {
         b: new ConstantFrom(["foo", "baz"]),
         want: false,
       },
+      "ConstantFrom with constraint and ConstantFrom": {
+        a: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
+        b: new ConstantFrom(["foo", "bar"]),
+        want: false,
+      },
+      "ConstantFrom and ConstantFrom with constraint": {
+        a: new ConstantFrom(["foo", "bar"]),
+        b: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
+        want: false,
+      },
+      "ConstantFrom with constraint and ConstantFrom with constraint, identical":
+        {
+          a: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
+          b: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
+          want: true,
+        },
+      "ConstantFrom with constraint and ConstantFrom with constraint, different":
+        {
+          a: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
+          b: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["baz"])),
+          want: false,
+        },
       "ConstantFrom and Apply": {
         a: new ConstantFrom(["foo", "bar"]),
         b: new Apply("Foobar"),
@@ -119,6 +161,38 @@ suite("terms", () => {
         b: new OneOf([new Terminal("foo"), new Terminal("baz")]),
         want: false,
       },
+      "OneOf with constraint and OneOf": {
+        a: new OneOf([new Terminal("foo"), new Terminal("bar")]).withConstraint(
+          new Not(["bar"]),
+        ),
+        b: new OneOf([new Terminal("foo"), new Terminal("bar")]),
+        want: false,
+      },
+      "OneOf and OneOf with constraint": {
+        a: new OneOf([new Terminal("foo"), new Terminal("bar")]),
+        b: new OneOf([new Terminal("foo"), new Terminal("bar")]).withConstraint(
+          new Not(["bar"]),
+        ),
+        want: false,
+      },
+      "OneOf with constraint and OneOf with constraint, identical": {
+        a: new OneOf([new Terminal("foo"), new Terminal("bar")]).withConstraint(
+          new Not(["bar"]),
+        ),
+        b: new OneOf([new Terminal("foo"), new Terminal("bar")]).withConstraint(
+          new Not(["bar"]),
+        ),
+        want: true,
+      },
+      "OneOf with constraint and OneOf with constraint, different": {
+        a: new OneOf([new Terminal("foo"), new Terminal("bar")]).withConstraint(
+          new Not(["bar"]),
+        ),
+        b: new OneOf([new Terminal("foo"), new Terminal("bar")]).withConstraint(
+          new Not(["baz"]),
+        ),
+        want: false,
+      },
       "OneOf and Apply": {
         a: new OneOf([new Terminal("foo"), new Terminal("bar")]),
         b: new Apply("Foobar"),
@@ -159,6 +233,38 @@ suite("terms", () => {
       "Optional and Optional, different": {
         a: new Optional(new Terminal("foobar")),
         b: new Optional(new Terminal("foobaz")),
+        want: false,
+      },
+      "Optional with constraint and Optional": {
+        a: new Optional(new Terminal("foobar")).withConstraint(
+          new Not(["bar"]),
+        ),
+        b: new Optional(new Terminal("foobar")),
+        want: false,
+      },
+      "Optional and Optional with constraint": {
+        a: new Optional(new Terminal("foobar")),
+        b: new Optional(new Terminal("foobar")).withConstraint(
+          new Not(["bar"]),
+        ),
+        want: false,
+      },
+      "Optional with constraint and Optional with constraint, identical": {
+        a: new Optional(new Terminal("foobar")).withConstraint(
+          new Not(["bar"]),
+        ),
+        b: new Optional(new Terminal("foobar")).withConstraint(
+          new Not(["bar"]),
+        ),
+        want: true,
+      },
+      "Optional with constraint and Optional with constraint, different": {
+        a: new Optional(new Terminal("foobar")).withConstraint(
+          new Not(["bar"]),
+        ),
+        b: new Optional(new Terminal("foobar")).withConstraint(
+          new Not(["baz"]),
+        ),
         want: false,
       },
       "Optional and Apply": {
@@ -213,6 +319,38 @@ suite("terms", () => {
         b: new Repeat(new Terminal("foobaz"), { min: 1 }),
         want: false,
       },
+      "Repeat with constraint and Repeat": {
+        a: new Repeat(new Terminal("foobar"), { min: 0 }).withConstraint(
+          new Not(["bar"]),
+        ),
+        b: new Repeat(new Terminal("foobar"), { min: 0 }),
+        want: false,
+      },
+      "Repeat and Repeat with constraint": {
+        a: new Repeat(new Terminal("foobar"), { min: 0 }),
+        b: new Repeat(new Terminal("foobar"), { min: 0 }).withConstraint(
+          new Not(["bar"]),
+        ),
+        want: false,
+      },
+      "Repeat with constraint and Repeat with constraint, identical": {
+        a: new Repeat(new Terminal("foobar"), { min: 0 }).withConstraint(
+          new Not(["bar"]),
+        ),
+        b: new Repeat(new Terminal("foobar"), { min: 0 }).withConstraint(
+          new Not(["bar"]),
+        ),
+        want: true,
+      },
+      "Repeat with constraint and Repeat with constraint, different": {
+        a: new Repeat(new Terminal("foobar"), { min: 0 }).withConstraint(
+          new Not(["bar"]),
+        ),
+        b: new Repeat(new Terminal("foobar"), { min: 0 }).withConstraint(
+          new Not(["baz"]),
+        ),
+        want: false,
+      },
       "Repeat and Apply": {
         a: new Repeat(new Terminal("foobar"), { min: 0 }),
         b: new Apply("Foobar"),
@@ -255,6 +393,44 @@ suite("terms", () => {
         b: new Sequence([new Terminal("foo"), new Terminal("baz")]),
         want: false,
       },
+      "Sequence with constraint and Sequence": {
+        a: new Sequence([
+          new Terminal("foo"),
+          new Terminal("bar"),
+        ]).withConstraint(new Not(["bar"])),
+        b: new Sequence([new Terminal("foo"), new Terminal("bar")]),
+        want: false,
+      },
+      "Sequence and Sequence with constraint": {
+        a: new Sequence([new Terminal("foo"), new Terminal("bar")]),
+        b: new Sequence([
+          new Terminal("foo"),
+          new Terminal("bar"),
+        ]).withConstraint(new Not(["bar"])),
+        want: false,
+      },
+      "Sequence with constraint and Sequence with constraint, identical": {
+        a: new Sequence([
+          new Terminal("foo"),
+          new Terminal("bar"),
+        ]).withConstraint(new Not(["bar"])),
+        b: new Sequence([
+          new Terminal("foo"),
+          new Terminal("bar"),
+        ]).withConstraint(new Not(["bar"])),
+        want: true,
+      },
+      "Sequence with constraint and Sequence with constraint, different": {
+        a: new Sequence([
+          new Terminal("foo"),
+          new Terminal("bar"),
+        ]).withConstraint(new Not(["bar"])),
+        b: new Sequence([
+          new Terminal("foo"),
+          new Terminal("bar"),
+        ]).withConstraint(new Not(["baz"])),
+        want: false,
+      },
       "Sequence and Apply": {
         a: new Sequence([new Terminal("foo"), new Terminal("bar")]),
         b: new Apply("Foobar"),
@@ -295,6 +471,26 @@ suite("terms", () => {
       "Terminal and Terminal, different": {
         a: new Terminal("foobar"),
         b: new Terminal("foobaz"),
+        want: false,
+      },
+      "Terminal with constraint and Terminal": {
+        a: new Terminal("foobar").withConstraint(new Not(["bar"])),
+        b: new Terminal("foobar"),
+        want: false,
+      },
+      "Terminal and Terminal with constraint": {
+        a: new Terminal("foobar"),
+        b: new Terminal("foobar").withConstraint(new Not(["bar"])),
+        want: false,
+      },
+      "Terminal with constraint and Terminal with constraint, identical": {
+        a: new Terminal("foobar").withConstraint(new Not(["bar"])),
+        b: new Terminal("foobar").withConstraint(new Not(["bar"])),
+        want: true,
+      },
+      "Terminal with constraint and Terminal with constraint, different": {
+        a: new Terminal("foobar").withConstraint(new Not(["bar"])),
+        b: new Terminal("foobar").withConstraint(new Not(["baz"])),
         want: false,
       },
       "Terminal and Apply": {
@@ -389,87 +585,265 @@ suite("terms", () => {
     }
   });
 
-  suite("toString", () => {
-    const testdata = {
-      terminal: {
-        term: new Terminal("foobar"),
-        want: `fc.constant("foobar")`,
-      },
-      "rule application": {
-        term: new Apply("ruleFoobar"),
-        want: `tie("ruleFoobar")`,
-      },
-      "sequence of terminals": {
-        term: new Sequence([new Terminal("foo"), new Terminal("bar")]),
-        want: `fc.tuple(fc.constant("foo"), fc.constant("bar")).map(array => array.join(""))`,
-      },
-      "sequence of rules": {
-        term: new Sequence([new Apply("ruleFoo"), new Apply("ruleBar")]),
-        want: `fc.tuple(tie("ruleFoo"), tie("ruleBar")).map(array => array.join(""))`,
-      },
-      "sequence of rules and terminals": {
-        term: new Sequence([
-          new Apply("foo"),
-          new Terminal("-"),
-          new Apply("bar"),
-        ]),
-        want: `fc.tuple(tie("foo"), fc.constant("-"), tie("bar")).map(array => array.join(""))`,
-      },
-      "alteration of terminals": {
-        term: new OneOf([new Terminal("foo"), new Terminal("bar")]),
-        want: `fc.oneof(fc.constant("foo"), fc.constant("bar"))`,
-      },
-      "alteration of rules": {
-        term: new OneOf([new Apply("ruleFoo"), new Apply("ruleBar")]),
-        want: `fc.oneof(tie("ruleFoo"), tie("ruleBar"))`,
-      },
-      "alteration of rules and terminals": {
-        term: new OneOf([
-          new Apply("foo"),
-          new Terminal("-"),
-          new Apply("bar"),
-        ]),
-        want: `fc.oneof(tie("foo"), fc.constant("-"), tie("bar"))`,
-      },
-      "0-or-1 terminal": {
-        term: new Optional(new Terminal("foobar")),
-        want: `fc.option(fc.constant("foobar"), { nil: "" })`,
-      },
-      "0-or-1 rule application": {
-        term: new Optional(new Apply("ruleFoobar")),
-        want: `fc.option(tie("ruleFoobar"), { nil: "" })`,
-      },
-      "0-or-more of terminals": {
-        term: new Repeat(new Terminal("foobar"), { min: 0 }),
-        want: `fc.array(fc.constant("foobar"), { minLength: 0 }).map(array => array.join(""))`,
-      },
-      "0-or-more of rule applications": {
-        term: new Repeat(new Apply("ruleFoo"), { min: 0 }),
-        want: `fc.array(tie("ruleFoo"), { minLength: 0 }).map(array => array.join(""))`,
-      },
-      "1-or-more of terminal": {
-        term: new Repeat(new Terminal("foobar"), { min: 1 }),
-        want: `fc.array(fc.constant("foobar"), { minLength: 1 }).map(array => array.join(""))`,
-      },
-      "1-or-more of terminal": {
-        term: new Repeat(new Apply("ruleBar"), { min: 1 }),
-        want: `fc.array(tie("ruleBar"), { minLength: 1 }).map(array => array.join(""))`,
-      },
-      "with constraint": {
-        term: new Repeat(new Terminal("a"), { min: 0 }).withConstraint(
-          new Not(["aa"]),
-        ),
-        want: `fc.array(fc.constant("a"), { minLength: 0 }).map(array => array.join("")).filter(string => !["aa"].includes(string))`,
-      },
-    };
+  suite("properties", () => {
+    suite("get", () => {
+      const testdata = {
+        /* Apply */
+        "Apply#constraint, default": {
+          subject: new Apply("Foobar"),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new None())),
+        },
+        "Apply#constraint, set": {
+          subject: new Apply("Foobar").withConstraint(new Not(["foobar"])),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new Not(["foobar"]))),
+        },
+        "Apply#identifier": {
+          subject: new Apply("Foobar"),
+          property: "identifier",
+          assert: (got) => assert.equal(got, "Foobar"),
+        },
 
-    for (const [name, testcase] of Object.entries(testdata)) {
-      test(name, () => {
-        const { term, want } = testcase;
+        /* ConstantFrom */
+        "ConstantFrom#constraint, default": {
+          subject: new ConstantFrom(["foo", "bar"]),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new None())),
+        },
+        "ConstantFrom#constraint, set": {
+          subject: new ConstantFrom(["foo", "bar"]).withConstraint(
+            new Not(["foobar"]),
+          ),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new Not(["foobar"]))),
+        },
+        "ConstantFrom#constants": {
+          subject: new ConstantFrom(["foo", "bar"]),
+          property: "constants",
+          assert: (got) => assert.deepEqual(got, ["foo", "bar"]),
+        },
 
-        const got = term.toString();
-        assert.equal(got, want);
-      });
-    }
+        /* OneOf */
+        "OneOf#constraint, default": {
+          subject: new OneOf([new Terminal("foo"), new Terminal("bar")]),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new None())),
+        },
+        "OneOf#constraint, set": {
+          subject: new OneOf([
+            new Terminal("foo"),
+            new Terminal("bar"),
+          ]).withConstraint(new Not(["foobar"])),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new Not(["foobar"]))),
+        },
+        "OneOf#constants": {
+          subject: new OneOf([new Terminal("foo"), new Terminal("bar")]),
+          property: "options",
+          assert: (got) =>
+            assert.ok(
+              got.length === 2 &&
+                got[0].equals(new Terminal("foo")) &&
+                got[1].equals(new Terminal("bar")),
+            ),
+        },
+
+        /* Optional */
+        "Optional#constraint, default": {
+          subject: new Optional(new Terminal("foobar")),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new None())),
+        },
+        "Optional#constraint, default": {
+          subject: new Optional(new Terminal("foobar")).withConstraint(
+            new Not(["foobar"]),
+          ),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new Not(["foobar"]))),
+        },
+        "Optional#constant": {
+          subject: new Optional(new Terminal("foobar")),
+          property: "option",
+          assert: (got) => assert.ok(got.equals(new Terminal("foobar"))),
+        },
+
+        /* Repeat */
+        "Repeat#constraint, default": {
+          subject: new Repeat(new Terminal("foobar"), { min: 0 }),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new None())),
+        },
+        "Repeat#constraint, set": {
+          subject: new Repeat(new Terminal("foobar"), {
+            min: 0,
+          }).withConstraint(new Not(["foobar"])),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new Not(["foobar"]))),
+        },
+        "Repeat#parameters": {
+          subject: new Repeat(new Terminal("foobar"), { min: 1 }),
+          property: "parameters",
+          assert: (got) => assert.deepEqual(got, { min: 1 }),
+        },
+        "Repeat#subject": {
+          subject: new Repeat(new Terminal("foobar"), { min: 2 }),
+          property: "subject",
+          assert: (got) => assert.ok(got.equals(new Terminal("foobar"))),
+        },
+
+        /* Sequence */
+        "Sequence#constraint, default": {
+          subject: new Sequence([new Terminal("foo"), new Terminal("bar")]),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new None())),
+        },
+        "Sequence#constraint, set": {
+          subject: new Sequence([
+            new Terminal("foo"),
+            new Terminal("bar"),
+          ]).withConstraint(new Not(["foobar"])),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new Not(["foobar"]))),
+        },
+        "Sequence#subjects": {
+          subject: new Sequence([new Terminal("foo"), new Terminal("bar")]),
+          property: "subjects",
+          assert: (got) =>
+            assert.ok(
+              got.length === 2 &&
+                got[0].equals(new Terminal("foo")) &&
+                got[1].equals(new Terminal("bar")),
+            ),
+        },
+
+        /* Terminal */
+        "Terminal#constraint, default": {
+          subject: new Terminal("foobar"),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new None())),
+        },
+        "Terminal#constraint, set": {
+          subject: new Terminal("foobar").withConstraint(new Not(["foobar"])),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new Not(["foobar"]))),
+        },
+        "Terminal#subjects": {
+          subject: new Terminal("foobar"),
+          property: "term",
+          assert: (got) => assert.equal(got, "foobar"),
+        },
+      };
+
+      for (const [name, testcase] of Object.entries(testdata)) {
+        test(name, () => {
+          const { assert, property, subject } = testcase;
+          assert(subject[property]);
+        });
+      }
+    });
+
+    suite("set", () => {
+      const testdata = {
+        /* Apply */
+        "Apply#constraint": {
+          subject: new Apply("Foobar"),
+          property: "constraint",
+          value: new None(),
+          want: /^TypeError: Cannot set property constraint /,
+        },
+        "Apply#identifier": {
+          subject: new Apply("Foobar"),
+          property: "identifier",
+          value: "Foobaz",
+          want: /^TypeError: Cannot set property identifier /,
+        },
+
+        /* ConstantFrom */
+        "ConstantFrom#constraint": {
+          subject: new ConstantFrom(["foo", "bar"]),
+          property: "constraint",
+          value: new None(),
+          want: /^TypeError: Cannot set property constraint /,
+        },
+        "ConstantFrom#constants": {
+          subject: new ConstantFrom(["foo", "bar"]),
+          property: "constants",
+          value: ["foo", "baz"],
+          want: /^TypeError: Cannot set property constants /,
+        },
+
+        /* OneOf */
+        "OneOf#constraint": {
+          subject: new OneOf([new Terminal("foo"), new Terminal("bar")]),
+          property: "constraint",
+          value: new None(),
+          want: /^TypeError: Cannot set property constraint /,
+        },
+        "OneOf#options": {
+          subject: new OneOf([new Terminal("foo"), new Terminal("bar")]),
+          property: "options",
+          value: [new Terminal("foo"), new Terminal("baz")],
+          want: /^TypeError: Cannot set property options /,
+        },
+
+        /* Optional */
+        "Optional#constraint": {
+          subject: new Optional(new Terminal("foobar")),
+          property: "constraint",
+          value: new None(),
+          want: /^TypeError: Cannot set property constraint /,
+        },
+        "Optional#option": {
+          subject: new Optional(new Terminal("foobar")),
+          property: "option",
+          value: new Terminal("foobaz"),
+          want: /^TypeError: Cannot set property option /,
+        },
+
+        /* Repeat */
+        "Repeat#constraint": {
+          subject: new Repeat(new Terminal("foobar"), { min: 0 }),
+          property: "constraint",
+          value: new None(),
+          want: /^TypeError: Cannot set property constraint /,
+        },
+        "Repeat#parameters": {
+          subject: new Repeat(new Terminal("foobar"), { min: 1 }),
+          property: "parameters",
+          value: { min: 0 },
+          want: /^TypeError: Cannot set property parameters /,
+        },
+        "Repeat#subject": {
+          subject: new Repeat(new Terminal("foobar"), { min: 2 }),
+          property: "subject",
+          value: new Terminal("foobaz"),
+          want: /^TypeError: Cannot set property subject /,
+        },
+
+        /* Terminal */
+        "Terminal#constraint": {
+          subject: new Terminal("foobar"),
+          property: "constraint",
+          value: new None(),
+          want: /^TypeError: Cannot set property constraint /,
+        },
+        "Terminal#term": {
+          subject: new Terminal("foobar"),
+          property: "term",
+          value: "foobaz",
+          want: /^TypeError: Cannot set property term /,
+        },
+      };
+
+      for (const [name, testcase] of Object.entries(testdata)) {
+        test(name, () => {
+          const { property, subject, value, want } = testcase;
+          assert.throws(() => {
+            subject[property] = value;
+          }, want);
+        });
+      }
+    });
   });
 });

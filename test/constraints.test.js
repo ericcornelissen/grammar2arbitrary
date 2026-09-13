@@ -3,7 +3,7 @@
 import * as assert from "node:assert/strict";
 import { suite, test } from "node:test";
 
-import { Not, None } from "../src/constraints.js";
+import { None, Not } from "../src/constraints.js";
 
 suite("constraints", () => {
   suite("equals", () => {
@@ -51,25 +51,44 @@ suite("constraints", () => {
     }
   });
 
-  suite("toString", () => {
-    const testdata = {
-      none: {
-        term: new None(),
-        want: ``,
-      },
-      not: {
-        term: new Not(["foo", "bar"]),
-        want: `.filter(string => !["foo", "bar"].includes(string))`,
-      },
-    };
+  suite("properties", () => {
+    suite("get", () => {
+      const testdata = {
+        /* Not */
+        "Not#exclusions": {
+          subject: new Not(["foo", "bar"]),
+          property: "exclusions",
+          want: ["foo", "bar"],
+        },
+      };
 
-    for (const [name, testcase] of Object.entries(testdata)) {
-      test(name, () => {
-        const { term, want } = testcase;
+      for (const [name, testcase] of Object.entries(testdata)) {
+        test(name, () => {
+          const { property, subject, want } = testcase;
+          assert.deepEqual(subject[property], want);
+        });
+      }
+    });
 
-        const got = term.toString();
-        assert.equal(got, want);
-      });
-    }
+    suite("set", () => {
+      const testdata = {
+        /* Not */
+        "Not#exclusions": {
+          subject: new Not(["foo", "bar"]),
+          property: "exclusions",
+          value: ["foo", "bar"],
+          want: /^TypeError: Cannot set property exclusions /,
+        },
+      };
+
+      for (const [name, testcase] of Object.entries(testdata)) {
+        test(name, () => {
+          const { property, subject, value, want } = testcase;
+          assert.throws(() => {
+            subject[property] = value;
+          }, want);
+        });
+      }
+    });
   });
 });
