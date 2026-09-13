@@ -3,15 +3,7 @@
 import assert from "node:assert";
 
 import { None, Not } from "./constraints.js";
-import {
-  Apply,
-  ConstantFrom,
-  OneOf,
-  Optional,
-  Repeat,
-  Sequence,
-  Terminal,
-} from "./terms.js";
+import { Apply, OneOf, Optional, Repeat, Sequence, Terminal } from "./terms.js";
 
 export function toArbitrary(rule) {
   const arbitrary = ruleToArbitrary(rule);
@@ -24,14 +16,18 @@ function ruleToArbitrary(rule) {
     case rule instanceof Apply:
       const identifier = rule.identifier;
       return `tie("${identifier}")`;
-    case rule instanceof ConstantFrom:
-      const constants = rule.constants.join('","');
-      return `fc.constantFrom("${constants}")`;
     case rule instanceof OneOf:
-      const options = rule.options
-        .map((option) => toArbitrary(option))
-        .join(",");
-      return `fc.oneof(${options})`;
+      if (rule.options.every((option) => option instanceof Terminal)) {
+        const options = rule.options
+          .map((terminal) => terminal.term)
+          .join('","');
+        return `fc.constantFrom("${options}")`;
+      } else {
+        const options = rule.options
+          .map((option) => toArbitrary(option))
+          .join(",");
+        return `fc.oneof(${options})`;
+      }
     case rule instanceof Optional:
       const option = toArbitrary(rule.option);
       return `fc.option(${option},{nil:""})`;

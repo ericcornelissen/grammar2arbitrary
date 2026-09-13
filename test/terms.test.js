@@ -7,7 +7,6 @@ import { None, Not } from "../src/constraints.js";
 
 import {
   Apply,
-  ConstantFrom,
   OneOf,
   Optional,
   Repeat,
@@ -49,11 +48,6 @@ suite("terms", () => {
         b: new Apply("Foo").withConstraint(new Not(["baz"])),
         want: false,
       },
-      "Apply and ConstantFrom": {
-        a: new Apply("Foobar"),
-        b: new ConstantFrom(["Foobar"]),
-        want: false,
-      },
       "Apply and OneOf": {
         a: new Apply("Foobar"),
         b: new OneOf([new Apply("Foo"), new Apply("Bar")]),
@@ -77,76 +71,6 @@ suite("terms", () => {
       "Apply and Terminal": {
         a: new Apply("Foobar"),
         b: new Terminal("Foobar"),
-        want: false,
-      },
-
-      /* ConstantFrom */
-      "ConstantFrom and ConstantFrom, identical": {
-        a: new ConstantFrom(["foo", "bar"]),
-        b: new ConstantFrom(["foo", "bar"]),
-        want: true,
-      },
-      "ConstantFrom and ConstantFrom, different": {
-        a: new ConstantFrom(["foo", "bar"]),
-        b: new ConstantFrom(["foo", "baz"]),
-        want: false,
-      },
-      "ConstantFrom with constraint and ConstantFrom": {
-        a: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
-        b: new ConstantFrom(["foo", "bar"]),
-        want: false,
-      },
-      "ConstantFrom and ConstantFrom with constraint": {
-        a: new ConstantFrom(["foo", "bar"]),
-        b: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
-        want: false,
-      },
-      "ConstantFrom with constraint and ConstantFrom with constraint, identical":
-        {
-          a: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
-          b: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
-          want: true,
-        },
-      "ConstantFrom with constraint and ConstantFrom with constraint, different":
-        {
-          a: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
-          b: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["baz"])),
-          want: false,
-        },
-      "ConstantFrom and Apply": {
-        a: new ConstantFrom(["foo", "bar"]),
-        b: new Apply("Foobar"),
-        want: false,
-      },
-      "ConstantFrom and OneOf": {
-        a: new ConstantFrom(["foo", "bar"]),
-        b: new OneOf([
-          new ConstantFrom(["foo", "bar"]),
-          new ConstantFrom(["foo", "baz"]),
-        ]),
-        want: false,
-      },
-      "ConstantFrom and Optional": {
-        a: new ConstantFrom(["foo", "bar"]),
-        b: new Optional(new ConstantFrom(["foo", "bar"])),
-        want: false,
-      },
-      "ConstantFrom and Repeat": {
-        a: new ConstantFrom(["foo", "bar"]),
-        b: new Repeat(new ConstantFrom(["foo", "bar"]), { min: 1 }),
-        want: false,
-      },
-      "ConstantFrom and Sequence": {
-        a: new ConstantFrom(["foo", "bar"]),
-        b: new Sequence([
-          new ConstantFrom(["foo", "bar"]),
-          new ConstantFrom(["foo", "baz"]),
-        ]),
-        want: false,
-      },
-      "ConstantFrom and Terminal": {
-        a: new ConstantFrom(["foo", "bar"]),
-        b: new Terminal("foobar"),
         want: false,
       },
 
@@ -196,11 +120,6 @@ suite("terms", () => {
       "OneOf and Apply": {
         a: new OneOf([new Terminal("foo"), new Terminal("bar")]),
         b: new Apply("Foobar"),
-        want: false,
-      },
-      "OneOf and ConstantFrom": {
-        a: new OneOf([new Terminal("foo"), new Terminal("bar")]),
-        b: new ConstantFrom(["foo", "bar"]),
         want: false,
       },
       "OneOf and Optional": {
@@ -270,11 +189,6 @@ suite("terms", () => {
       "Optional and Apply": {
         a: new Optional(new Terminal("foobar")),
         b: new Apply("Foobar"),
-        want: false,
-      },
-      "Optional and ConstantFrom": {
-        a: new Optional(new Terminal("foobar")),
-        b: new ConstantFrom(["foo", "bar"]),
         want: false,
       },
       "Optional and OneOf": {
@@ -356,11 +270,6 @@ suite("terms", () => {
         b: new Apply("Foobar"),
         want: false,
       },
-      "Repeat and ConstantFrom": {
-        a: new Repeat(new Terminal("foobar"), { min: 0 }),
-        b: new ConstantFrom(["foo", "bar"]),
-        want: false,
-      },
       "Repeat and OneOf": {
         a: new Repeat(new Terminal("foobar"), { min: 0 }),
         b: new OneOf([new Terminal("foo"), new Terminal("bar")]),
@@ -436,11 +345,6 @@ suite("terms", () => {
         b: new Apply("Foobar"),
         want: false,
       },
-      "Sequence and ConstantFrom": {
-        a: new Sequence([new Terminal("foo"), new Terminal("bar")]),
-        b: new ConstantFrom(["foo", "bar"]),
-        want: false,
-      },
       "Sequence and OneOf": {
         a: new Sequence([new Terminal("foo"), new Terminal("bar")]),
         b: new OneOf([new Terminal("foo"), new Terminal("bar")]),
@@ -498,11 +402,6 @@ suite("terms", () => {
         b: new Apply("Foobar"),
         want: false,
       },
-      "Terminal and ConstantFrom": {
-        a: new Terminal("foobar"),
-        b: new ConstantFrom(["foo", "bar"]),
-        want: false,
-      },
       "Terminal and OneOf": {
         a: new Terminal("foobar"),
         b: new OneOf([new Terminal("foo"), new Terminal("bar")]),
@@ -551,25 +450,6 @@ suite("terms", () => {
           subject: new Apply("Foobar"),
           property: "identifier",
           assert: (got) => assert.equal(got, "Foobar"),
-        },
-
-        /* ConstantFrom */
-        "ConstantFrom#constraint, default": {
-          subject: new ConstantFrom(["foo", "bar"]),
-          property: "constraint",
-          assert: (got) => assert.ok(got.equals(new None())),
-        },
-        "ConstantFrom#constraint, set": {
-          subject: new ConstantFrom(["foo", "bar"]).withConstraint(
-            new Not(["foobar"]),
-          ),
-          property: "constraint",
-          assert: (got) => assert.ok(got.equals(new Not(["foobar"]))),
-        },
-        "ConstantFrom#constants": {
-          subject: new ConstantFrom(["foo", "bar"]),
-          property: "constants",
-          assert: (got) => assert.deepEqual(got, ["foo", "bar"]),
         },
 
         /* OneOf */
@@ -705,20 +585,6 @@ suite("terms", () => {
           property: "identifier",
           value: "Foobaz",
           want: /^TypeError: Cannot set property identifier /,
-        },
-
-        /* ConstantFrom */
-        "ConstantFrom#constraint": {
-          subject: new ConstantFrom(["foo", "bar"]),
-          property: "constraint",
-          value: new None(),
-          want: /^TypeError: Cannot set property constraint /,
-        },
-        "ConstantFrom#constants": {
-          subject: new ConstantFrom(["foo", "bar"]),
-          property: "constants",
-          value: ["foo", "baz"],
-          want: /^TypeError: Cannot set property constants /,
         },
 
         /* OneOf */
