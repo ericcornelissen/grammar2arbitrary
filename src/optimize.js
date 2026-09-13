@@ -15,21 +15,31 @@ import {
 
 export function optimize(rule) {
   switch (true) {
-    case rule instanceof Apply:
+    case rule instanceof Apply: {
       return rule;
-    case rule instanceof ConstantFrom:
+    }
+    case rule instanceof ConstantFrom: {
       return rule;
-    case rule instanceof OneOf:
-      if (rule.options.every((option) => option instanceof Terminal)) {
-        return new ConstantFrom(rule.options.map((terminal) => terminal.term));
-      } else {
-        return new OneOf(rule.options.map((option) => optimize(option)));
-      }
-    case rule instanceof Optional:
-      return new Optional(optimize(rule.option));
-    case rule instanceof Repeat:
-      return new Repeat(optimize(rule.subject), rule.parameters);
-    case rule instanceof Sequence:
+    }
+    case rule instanceof OneOf: {
+      const constraint = rule.constraint;
+      const optimized = rule.options.every((o) => o instanceof Terminal)
+        ? new ConstantFrom(rule.options.map((terminal) => terminal.term))
+        : new OneOf(rule.options.map((option) => optimize(option)));
+      return optimized.withConstraint(constraint);
+    }
+    case rule instanceof Optional: {
+      const constraint = rule.constraint;
+      const subject = optimize(rule.option);
+      return new Optional(subject).withConstraint(constraint);
+    }
+    case rule instanceof Repeat: {
+      const constraint = rule.constraint;
+      const parameters = rule.parameters;
+      const subject = optimize(rule.subject);
+      return new Repeat(subject, parameters).withConstraint(constraint);
+    }
+    case rule instanceof Sequence: {
       if (rule.subjects.length === 1) {
         return optimize(rule.subjects[0]);
       }
@@ -47,9 +57,9 @@ export function optimize(rule) {
       let [previous, current] = [];
       for (current of flattened) {
         if (previous) {
-          const joined = join(previous, current);
-          if (joined) {
-            current = joined;
+          const merged = merge(previous, current);
+          if (merged) {
+            current = merged;
           } else {
             subjects.push(previous);
           }
@@ -65,24 +75,30 @@ export function optimize(rule) {
       } else {
         return optimize(optimized);
       }
-    case rule instanceof Terminal:
+    }
+    case rule instanceof Terminal: {
       return rule;
+    }
     default:
       assert(false);
   }
 }
 
-function join(a, b) {
+function merge(a, b) {
   switch (true) {
-    case a instanceof Apply:
+    case a instanceof Apply: {
       return null;
-    case a instanceof ConstantFrom:
+    }
+    case a instanceof ConstantFrom: {
       return null;
-    case a instanceof OneOf:
+    }
+    case a instanceof OneOf: {
       return null;
-    case a instanceof Optional:
+    }
+    case a instanceof Optional: {
       return null;
-    case a instanceof Repeat:
+    }
+    case a instanceof Repeat: {
       if (b instanceof Repeat && a.subject.equals(b.subject)) {
         const parameters = {
           min: a.parameters.min + b.parameters.min,
@@ -91,14 +107,17 @@ function join(a, b) {
       }
 
       return null;
-    case a instanceof Sequence:
+    }
+    case a instanceof Sequence: {
       return null;
-    case a instanceof Terminal:
+    }
+    case a instanceof Terminal: {
       if (b instanceof Terminal) {
         return new Terminal(a.term + b.term);
       }
 
       return null;
+    }
     default:
       assert(false);
   }
