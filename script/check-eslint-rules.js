@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT-0
 
+import * as console from "node:console";
 import process from "node:process";
 
 const configModule = await import("../.eslint.js");
