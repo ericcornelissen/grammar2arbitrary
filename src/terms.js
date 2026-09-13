@@ -23,14 +23,6 @@ class Term {
     return this.#constraint.equals(that.#constraint);
   }
 
-  join() {
-    assert(false, "not implemented");
-  }
-
-  optimized() {
-    assert(false, "not implemented");
-  }
-
   withConstraint(constraint) {
     assert(constraint instanceof Constraint);
 
@@ -61,14 +53,6 @@ export class Apply extends Term {
       super.equals(that)
     );
   }
-
-  join() {
-    return null;
-  }
-
-  optimized() {
-    return this;
-  }
 }
 
 export class ConstantFrom extends Term {
@@ -97,14 +81,6 @@ export class ConstantFrom extends Term {
       ) &&
       super.equals(that)
     );
-  }
-
-  join() {
-    return null;
-  }
-
-  optimized() {
-    return this;
   }
 }
 
@@ -135,18 +111,6 @@ export class OneOf extends Term {
       super.equals(that)
     );
   }
-
-  join() {
-    return null;
-  }
-
-  optimized() {
-    if (this.#options.every((option) => option instanceof Terminal)) {
-      return new ConstantFrom(this.#options.map((terminal) => terminal.term));
-    }
-
-    return new OneOf(this.#options.map((option) => option.optimized()));
-  }
 }
 
 export class Optional extends Term {
@@ -170,14 +134,6 @@ export class Optional extends Term {
       this.#option.equals(that.#option) &&
       super.equals(that)
     );
-  }
-
-  join() {
-    return null;
-  }
-
-  optimized() {
-    return new Optional(this.#option.optimized());
   }
 }
 
@@ -212,17 +168,7 @@ export class Repeat extends Term {
     );
   }
 
-  join(that) {
-    if (that instanceof Repeat && this.#subject.equals(that.#subject)) {
-      return new Repeat(this.#subject, { min: this.#min + that.#min });
-    } else {
-      return null;
-    }
-  }
-
-  optimized() {
-    return new Repeat(this.#subject.optimized(), { min: this.#min });
-  }
+  join(that) {}
 }
 
 export class Sequence extends Term {
@@ -252,45 +198,6 @@ export class Sequence extends Term {
       super.equals(that)
     );
   }
-
-  optimized() {
-    if (this.#subjects.length === 1) {
-      return this.#subjects[0].optimized();
-    }
-
-    const flattened = [];
-    for (const subject of this.#subjects) {
-      if (subject instanceof Sequence) {
-        flattened.push(...subject.#subjects);
-      } else {
-        flattened.push(subject);
-      }
-    }
-
-    const subjects = [];
-
-    let [previous, current] = [];
-    for (current of flattened) {
-      if (previous) {
-        const joined = previous.join(current);
-        if (joined) {
-          current = joined;
-        } else {
-          subjects.push(previous);
-        }
-      }
-
-      previous = current;
-    }
-    subjects.push(current);
-
-    const that = new Sequence(subjects);
-    if (this.equals(that)) {
-      return this;
-    } else {
-      return that.optimized();
-    }
-  }
 }
 
 export class Terminal extends Term {
@@ -314,17 +221,5 @@ export class Terminal extends Term {
       this.#term === that.#term &&
       super.equals(that)
     );
-  }
-
-  join(that) {
-    if (that instanceof Terminal) {
-      return new Terminal(this.#term + that.#term);
-    } else {
-      return null;
-    }
-  }
-
-  optimized() {
-    return this;
   }
 }
