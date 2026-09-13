@@ -40,7 +40,8 @@
     "eslint-node-test": "0.4.0",
     "npm-run-all2": "9.0.2",
     "prettier": "3.9.4",
-    "semver": "7.8.5"
+    "semver": "7.8.5",
+    "strip-assertions": "1.0.6"
   },
   "scripts": {
     "_prettier": "prettier  --ignore-path .gitignore '**/*.{js,json,md,yml}'",
@@ -53,6 +54,7 @@
     "test": "npm-run-all test:*",
     "test:bin": "node --test bin.test.js",
     "test:unit": "node --test \"test/*.test.js\"",
+    "package": "strip-assertions src/*.js",
     "verify": "npm run check && npm run test",
     "version-bump": "node script/version-bump.js"
   }
