@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from "node:assert";
+
 import { None, Not } from "./constraints.js";
 import {
   Apply,
@@ -61,5 +63,7 @@ function constraintToArbitrary(constraint) {
       const exclusions = constraint.exclusions;
       const array = `["${exclusions.join('","')}"]`;
       return `.filter(string=>!${array}.includes(string))`;
+    default:
+      assert(false);
   }
 }
