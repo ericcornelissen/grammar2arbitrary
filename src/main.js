@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ohm2arbitrary } from "./ohm.js";
+import { toArbitrary } from "./arbitraries.js";
 
 export function grammer2arbitrary({ baseRules, exportName, raw }) {
   const rules = parseGrammar(raw);
@@ -36,6 +37,7 @@ export function ${exportName}(opts=DEFAULT_OPTS) {
 				${baseRules.map((baseRule) => `tie("${baseRule}")`).join(",\n\t\t\t\t")}
 			),
 			${Array.from(rules.entries())
+        .map(([name, rule]) => [name, toArbitrary(rule)])
         .map(([name, arbitrary]) => `["${name}"]: ${arbitrary}`)
         .join(",\n\t\t\t")}
 		};

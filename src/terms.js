@@ -4,11 +4,19 @@ import assert from "node:assert";
 
 import { Constraint, None } from "./constraints.js";
 
+const secret = Symbol();
+
 class Term {
   #constraint;
 
-  constructor() {
+  constructor(password) {
+    assert(password === secret);
+
     this.#constraint = new None();
+  }
+
+  get constraint() {
+    return this.#constraint;
   }
 
   equals(that) {
@@ -23,12 +31,6 @@ class Term {
     assert(false, "not implemented");
   }
 
-  toString() {
-    const arbitrary = this.arbitrary();
-    const constraint = this.#constraint;
-    return `${arbitrary}${constraint}`;
-  }
-
   withConstraint(constraint) {
     assert(constraint instanceof Constraint);
 
@@ -41,11 +43,15 @@ export class Apply extends Term {
   #identifier;
 
   constructor(identifier) {
-    super();
+    super(secret);
 
     assert(typeof identifier === "string");
 
     this.#identifier = identifier;
+  }
+
+  get identifier() {
+    return this.#identifier;
   }
 
   equals(that) {
@@ -63,24 +69,23 @@ export class Apply extends Term {
   optimized() {
     return this;
   }
-
-  arbitrary() {
-    const identifier = this.#identifier;
-    return `tie("${identifier}")`;
-  }
 }
 
 export class ConstantFrom extends Term {
   #constants;
 
   constructor(constants) {
-    super();
+    super(secret);
 
     assert(Array.isArray(constants));
     assert(constants.length > 0);
     assert(constants.every((constant) => typeof constant === "string"));
 
     this.#constants = constants;
+  }
+
+  get constants() {
+    return this.#constants;
   }
 
   equals(that) {
@@ -101,24 +106,23 @@ export class ConstantFrom extends Term {
   optimized() {
     return this;
   }
-
-  arbitrary() {
-    const constants = this.#constants.join('", "');
-    return `fc.constantFrom("${constants}")`;
-  }
 }
 
 export class OneOf extends Term {
   #options;
 
   constructor(options) {
-    super();
+    super(secret);
 
     assert(Array.isArray(options));
     assert(options.length > 0);
     assert(options.every((option) => option instanceof Term));
 
     this.#options = options;
+  }
+
+  get options() {
+    return this.#options;
   }
 
   equals(that) {
@@ -138,17 +142,10 @@ export class OneOf extends Term {
 
   optimized() {
     if (this.#options.every((option) => option instanceof Terminal)) {
-      return new ConstantFrom(this.#options.map((terminal) => terminal.term()));
+      return new ConstantFrom(this.#options.map((terminal) => terminal.term));
     }
 
     return new OneOf(this.#options.map((option) => option.optimized()));
-  }
-
-  arbitrary() {
-    const options = this.#options
-      .map((option) => option.arbitrary())
-      .join(", ");
-    return `fc.oneof(${options})`;
   }
 }
 
@@ -156,11 +153,15 @@ export class Optional extends Term {
   #option;
 
   constructor(option) {
-    super();
+    super(secret);
 
     assert(option instanceof Term);
 
     this.#option = option;
+  }
+
+  get option() {
+    return this.#option;
   }
 
   equals(that) {
@@ -178,11 +179,6 @@ export class Optional extends Term {
   optimized() {
     return new Optional(this.#option.optimized());
   }
-
-  arbitrary() {
-    const option = this.#option;
-    return `fc.option(${option}, { nil: "" })`;
-  }
 }
 
 export class Repeat extends Term {
@@ -190,13 +186,21 @@ export class Repeat extends Term {
   #subject;
 
   constructor(subject, { min }) {
-    super();
+    super(secret);
 
     assert(subject instanceof Term);
     assert(typeof min === "number" && !Number.isNaN(min));
 
     this.#min = min;
     this.#subject = subject;
+  }
+
+  get parameters() {
+    return { min: this.#min };
+  }
+
+  get subject() {
+    return this.#subject;
   }
 
   equals(that) {
@@ -219,25 +223,23 @@ export class Repeat extends Term {
   optimized() {
     return new Repeat(this.#subject.optimized(), { min: this.#min });
   }
-
-  arbitrary() {
-    const min = this.#min;
-    const subject = this.#subject;
-    return `fc.array(${subject}, { minLength: ${min} }).map(array => array.join(""))`;
-  }
 }
 
 export class Sequence extends Term {
   #subjects;
 
   constructor(subjects) {
-    super();
+    super(secret);
 
     assert(Array.isArray(subjects));
     assert(subjects.length > 0);
     assert(subjects.every((subject) => subject instanceof Term));
 
     this.#subjects = subjects;
+  }
+
+  get subjects() {
+    return this.#subjects;
   }
 
   equals(that) {
@@ -289,22 +291,21 @@ export class Sequence extends Term {
       return that.optimized();
     }
   }
-
-  arbitrary() {
-    const subjects = this.#subjects;
-    return `fc.tuple(${subjects.join(", ")}).map(array => array.join(""))`;
-  }
 }
 
 export class Terminal extends Term {
   #term;
 
   constructor(term) {
-    super();
+    super(secret);
 
     assert(typeof term === "string");
 
     this.#term = term;
+  }
+
+  get term() {
+    return this.#term;
   }
 
   equals(that) {
@@ -325,17 +326,5 @@ export class Terminal extends Term {
 
   optimized() {
     return this;
-  }
-
-  term() {
-    return this.#term;
-  }
-
-  arbitrary() {
-    const term = this.#term
-      .replaceAll(/(["\\])/g, "\\$1")
-      .replace(/\n/g, "\\n")
-      .replace(/\t/g, "\\t");
-    return `fc.constant("${term}")`;
   }
 }

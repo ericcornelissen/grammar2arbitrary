@@ -4,7 +4,7 @@ import assert from "node:assert";
 
 import * as ohm from "ohm-js";
 
-import { Not, None } from "./constraints.js";
+import { None, Not } from "./constraints.js";
 import { Apply, OneOf, Optional, Repeat, Sequence, Terminal } from "./terms.js";
 
 export function ohm2arbitrary(raw) {

@@ -2,29 +2,27 @@
 
 import assert from "node:assert";
 
+const secret = Symbol();
+
 export class Constraint {
-  equals() {
-    assert(false, "not implemented");
+  constructor(password) {
+    assert(password === secret);
   }
 
-  toString() {
-    assert(false, "not implemented");
+  equals() {
+    return true;
   }
 }
 
 export class None extends Constraint {
   constructor() {
-    super();
+    super(secret);
 
     assert(arguments.length === 0);
   }
 
   equals(that) {
-    return that instanceof None;
-  }
-
-  toString() {
-    return "";
+    return that instanceof None && super.equals(that);
   }
 }
 
@@ -32,7 +30,7 @@ export class Not extends Constraint {
   #exclusions;
 
   constructor(exclusions) {
-    super();
+    super(secret);
 
     assert(Array.isArray(exclusions));
     assert(exclusions.length > 0);
@@ -41,19 +39,18 @@ export class Not extends Constraint {
     this.#exclusions = exclusions;
   }
 
+  get exclusions() {
+    return this.#exclusions;
+  }
+
   equals(that) {
     return (
       that instanceof Not &&
       this.#exclusions.length === that.#exclusions.length &&
       this.#exclusions.every(
         (exclusion, index) => exclusion === that.#exclusions[index],
-      )
+      ) &&
+      super.equals(that)
     );
-  }
-
-  toString() {
-    const exclusions = this.#exclusions;
-    const array = `["${exclusions.join('", "')}"]`;
-    return `.filter(string => !${array}.includes(string))`;
   }
 }
