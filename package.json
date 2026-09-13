@@ -47,12 +47,12 @@
     "check": "npm-run-all check:*",
     "check:config": "node script/check-eslint-rules.js",
     "check:formatting": "npm run _prettier -- --check",
-    "check:js": "eslint --config .eslint.js '*.js'",
+    "check:js": "eslint --config .eslint.js \"*.js\"",
     "clean": "git clean -fx node_modules/ testdata/*.js",
     "format": "npm run _prettier -- --write",
     "test": "npm-run-all test:*",
     "test:bin": "node --test bin.test.js",
-    "test:unit": "node --test main.test.js",
+    "test:unit": "node --test \"test/*.test.js\"",
     "verify": "npm run check && npm run test",
     "version-bump": "node script/version-bump.js"
   }

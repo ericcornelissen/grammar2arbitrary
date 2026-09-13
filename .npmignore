@@ -4,10 +4,10 @@
 
 ## Allowlist
 !docs/
+!src/
 !LICENSE
 !README.md
 !SECURITY.md
 !bin.js
-!main.js
 !man.1
 !package.json
