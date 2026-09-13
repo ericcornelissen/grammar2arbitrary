@@ -45,6 +45,7 @@
   },
   "scripts": {
     "_prettier": "prettier  --ignore-path .gitignore '**/*.{js,json,md,yml}'",
+    "canary-test": "node script/canary-test.js",
     "check": "npm-run-all check:*",
     "check:config": "node script/check-eslint-rules.js",
     "check:formatting": "npm run _prettier -- --check",

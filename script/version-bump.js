@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { execSync } from "node:child_process";
+import * as console from "node:console";
 import { readFile, writeFile } from "node:fs/promises";
 import { argv, exit } from "node:process";
 import { dirname, resolve } from "node:path";
@@ -52,5 +53,6 @@ lines[0] = `.TH "grammar2arbitrary" "1" "${date}" "v${manifest.version}" "User C
 await writeFile(manDotOne, lines.join("\n"));
 
 execSync("git commit --all --message 'version bump'");
+execSync("git push origin main");
 execSync(`git tag v${manifest.version}`);
-execSync(`git push origin main v${manifest.version}`);
+execSync(`git push origin v${manifest.version}`);
