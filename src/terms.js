@@ -55,35 +55,6 @@ export class Apply extends Term {
   }
 }
 
-export class ConstantFrom extends Term {
-  #constants;
-
-  constructor(constants) {
-    super(secret);
-
-    assert(Array.isArray(constants));
-    assert(constants.length > 0);
-    assert(constants.every((constant) => typeof constant === "string"));
-
-    this.#constants = constants;
-  }
-
-  get constants() {
-    return this.#constants;
-  }
-
-  equals(that) {
-    return (
-      that instanceof ConstantFrom &&
-      this.#constants.length === that.#constants.length &&
-      this.#constants.every(
-        (constant, index) => constant === that.#constants[index],
-      ) &&
-      super.equals(that)
-    );
-  }
-}
-
 export class OneOf extends Term {
   #options;
 

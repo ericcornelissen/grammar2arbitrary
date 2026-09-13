@@ -6,7 +6,6 @@ import { suite, test } from "node:test";
 import { Not } from "../src/constraints.js";
 import {
   Apply,
-  ConstantFrom,
   OneOf,
   Optional,
   Repeat,
@@ -28,35 +27,12 @@ suite("optimize", () => {
       want: new Apply("Foo").withConstraint(new Not(["bar"])),
     },
 
-    /* ConstantFrom */
-    "ConstantFrom without constraint": {
-      term: new ConstantFrom(["foo", "bar"]),
-      want: new ConstantFrom(["foo", "bar"]),
-    },
-    "ConstantFrom with constraint": {
-      term: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
-      want: new ConstantFrom(["foo", "bar"]).withConstraint(new Not(["bar"])),
-    },
-
     /* OneOf */
-    "OneOf constants without constraint": {
-      term: new OneOf([new Terminal("Hello"), new Terminal("world")]),
-      want: new ConstantFrom(["Hello", "world"]),
-    },
-    "OneOf constants with constraint": {
-      term: new OneOf([
-        new Terminal("Hello"),
-        new Terminal("world"),
-      ]).withConstraint(new Not(["world"])),
-      want: new ConstantFrom(["Hello", "world"]).withConstraint(
-        new Not(["world"]),
-      ),
-    },
-    "OneOf non-constant without constraint": {
+    "OneOf without constraint": {
       term: new OneOf([new Apply("Foo"), new Apply("Bar")]),
       want: new OneOf([new Apply("Foo"), new Apply("Bar")]),
     },
-    "OneOf non-constant with constraint": {
+    "OneOf with constraint": {
       term: new OneOf([new Apply("Foo"), new Apply("Bar")]).withConstraint(
         new Not(["y"]),
       ),

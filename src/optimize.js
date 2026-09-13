@@ -2,31 +2,17 @@
 
 import assert from "node:assert";
 
-import { None } from "./constraints.js";
-import {
-  Apply,
-  ConstantFrom,
-  OneOf,
-  Optional,
-  Repeat,
-  Sequence,
-  Terminal,
-} from "./terms.js";
+import { Apply, OneOf, Optional, Repeat, Sequence, Terminal } from "./terms.js";
 
 export function optimize(rule) {
   switch (true) {
     case rule instanceof Apply: {
       return rule;
     }
-    case rule instanceof ConstantFrom: {
-      return rule;
-    }
     case rule instanceof OneOf: {
       const constraint = rule.constraint;
-      const optimized = rule.options.every((o) => o instanceof Terminal)
-        ? new ConstantFrom(rule.options.map((terminal) => terminal.term))
-        : new OneOf(rule.options.map((option) => optimize(option)));
-      return optimized.withConstraint(constraint);
+      const subjects = rule.options.map((option) => optimize(option));
+      return new OneOf(subjects).withConstraint(constraint);
     }
     case rule instanceof Optional: {
       const constraint = rule.constraint;
@@ -93,9 +79,6 @@ export function optimize(rule) {
 function merge(a, b) {
   switch (true) {
     case a instanceof Apply: {
-      return null;
-    }
-    case a instanceof ConstantFrom: {
       return null;
     }
     case a instanceof OneOf: {

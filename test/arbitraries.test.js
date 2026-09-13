@@ -6,7 +6,6 @@ import { suite, test } from "node:test";
 import { Not } from "../src/constraints.js";
 import {
   Apply,
-  ConstantFrom,
   OneOf,
   Optional,
   Repeat,
@@ -44,10 +43,6 @@ suite("toArbitrary", () => {
     },
     "alteration of terminals": {
       term: new OneOf([new Terminal("foo"), new Terminal("bar")]),
-      want: `fc.oneof(fc.constant("foo"),fc.constant("bar"))`,
-    },
-    "alteration of constants": {
-      term: new ConstantFrom(["foo", "bar"]),
       want: `fc.constantFrom("foo","bar")`,
     },
     "alteration of rules": {
