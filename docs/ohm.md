@@ -67,10 +67,47 @@ Example {
 }
 ```
 
-which wich generate any word consisting of one or more letters, but not "if" or
+which will generate any word consisting of one or more letters, but not "if" or
 "else" (or etc.).
 
 [rule descriptions]: https://ohmjs.org/docs/syntax-reference#rule-descriptions
+
+## External Rules
+
+External rule definitions allow you to use arbitraries defined somewhere else in
+you grammar. This can be useful when composing arbitraries or when migrating
+from a non-grammar arbitrary to a grammar-based one.
+
+To create an external rule, simply omit the rule's definition from the grammar:
+
+```ohm
+Example {
+  // ...
+
+  externalRule =
+}
+```
+
+You provide its definition at runtime. Thus, generate the JavaScript for the
+grammar:
+
+```shell
+grammar2arbitrary --export example --outFile example.js ...
+```
+
+And create a wrapper that imports the generated arbitrary. The wrapper should
+provide all external rule definitions in the second argument and return the
+arbitrary:
+
+```javascript
+import { example } from "./example.js";
+
+export function wrapper(options) {
+  return example(options, {
+    externalRule: fc.anything(),
+  });
+}
+```
 
 ## Caveats
 
