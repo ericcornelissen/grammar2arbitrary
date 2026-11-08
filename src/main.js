@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { ohm2arbitrary } from "./ohm.js";
 import { toArbitrary } from "./arbitraries.js";
+import { ohm2arbitrary } from "./ohm.js";
 import { External } from "./terms.js";
 
 export function grammer2arbitrary({ baseRules, exportName, raw }) {

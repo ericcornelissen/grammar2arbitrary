@@ -2,15 +2,15 @@
 
 import * as assert from "node:assert/strict";
 import * as fs from "node:fs/promises";
-import { test } from "node:test";
+import { suite, test } from "node:test";
 
 import { grammer2arbitrary } from "../src/main.js";
 
-test("grammer2arbitrary", async (t) => {
+suite("grammer2arbitrary", async () => {
   const raw = await fs.readFile("./testdata/example.ohm");
   const exportName = "Example";
 
-  await t.test("valid", async () => {
+  test("valid", async () => {
     const baseRules = ["Expression"];
     const exportName = "Example";
 
@@ -19,7 +19,7 @@ test("grammer2arbitrary", async (t) => {
     assert.match(script, /tie\("Expression"\)\s*\)/);
   });
 
-  await t.test("invalid", async () => {
+  test("invalid", async () => {
     const baseRules = ["not actually rule"];
 
     assert.throws(() => {

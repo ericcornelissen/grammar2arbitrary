@@ -162,8 +162,6 @@ export class Repeat extends Term {
       super.equals(that)
     );
   }
-
-  join(that) {}
 }
 
 export class Sequence extends Term {
