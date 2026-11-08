@@ -635,6 +635,20 @@ suite("terms", () => {
           want: /^TypeError: Cannot set property subject /,
         },
 
+        /* Sequence */
+        "Sequence#constraint": {
+          subject: new Sequence([new Terminal("foobar")]),
+          property: "constraint",
+          value: new None(),
+          want: /^TypeError: Cannot set property constraint /,
+        },
+        "Sequence#subjects": {
+          subject: new Sequence([new Terminal("foobar")]),
+          property: "subjects",
+          value: [new Terminal("foobaz")],
+          want: /^TypeError: Cannot set property subjects /,
+        },
+
         /* Terminal */
         "Terminal#constraint": {
           subject: new Terminal("foobar"),
