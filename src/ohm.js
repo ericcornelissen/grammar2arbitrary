@@ -5,7 +5,15 @@ import assert from "node:assert";
 import * as ohm from "ohm-js";
 
 import { None, Not } from "./constraints.js";
-import { Apply, OneOf, Optional, Repeat, Sequence, Terminal } from "./terms.js";
+import {
+  Apply,
+  External,
+  OneOf,
+  Optional,
+  Repeat,
+  Sequence,
+  Terminal,
+} from "./terms.js";
 
 export function ohm2arbitrary(raw) {
   const grammar = ohm.grammar(raw);
@@ -48,6 +56,10 @@ function ohmTermToAbstractTerm(term) {
       return new Repeat(ohmTermToAbstractTerm(term.expr), { min: 1 });
     }
     case term instanceof ohm.pexprs.Seq: {
+      if (term.factors.length === 0) {
+        return new External(term.source.startIdx);
+      }
+
       return new Sequence(term.factors.map(ohmTermToAbstractTerm));
     }
     case term instanceof ohm.pexprs.Star: {

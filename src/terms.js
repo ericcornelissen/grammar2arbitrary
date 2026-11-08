@@ -55,6 +55,30 @@ export class Apply extends Term {
   }
 }
 
+export class External extends Term {
+  #identifier;
+
+  constructor(identifier) {
+    super(secret);
+
+    assert(typeof identifier === "number");
+
+    this.#identifier = identifier;
+  }
+
+  get identifier() {
+    return this.#identifier;
+  }
+
+  equals(that) {
+    return (
+      that instanceof External &&
+      this.#identifier === that.#identifier &&
+      super.equals(that)
+    );
+  }
+}
+
 export class OneOf extends Term {
   #options;
 
