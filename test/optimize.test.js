@@ -131,6 +131,34 @@ suite("optimize", () => {
         new Terminal("Hello world!"),
       ]),
     },
+    "Sequence of constrained and unconstrained repetition": {
+      term: new Sequence([
+        new Repeat(new Terminal("a"), { min: 0 }).withConstraint(
+          new Not(["a"]),
+        ),
+        new Repeat(new Terminal("a"), { min: 1 }),
+      ]),
+      want: new Sequence([
+        new Repeat(new Terminal("a"), { min: 0 }).withConstraint(
+          new Not(["a"]),
+        ),
+        new Repeat(new Terminal("a"), { min: 1 }),
+      ]),
+    },
+    "Sequence of unconstrained and constrained repetition": {
+      term: new Sequence([
+        new Repeat(new Terminal("a"), { min: 0 }),
+        new Repeat(new Terminal("a"), { min: 1 }).withConstraint(
+          new Not(["aa"]),
+        ),
+      ]),
+      want: new Sequence([
+        new Repeat(new Terminal("a"), { min: 0 }),
+        new Repeat(new Terminal("a"), { min: 1 }).withConstraint(
+          new Not(["aa"]),
+        ),
+      ]),
+    },
 
     /* Terminal */
     "Terminal without constraint": {
