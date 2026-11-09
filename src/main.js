@@ -2,10 +2,12 @@
 
 import { toArbitrary } from "./arbitraries.js";
 import { ohm2arbitrary } from "./ohm.js";
+import { optimize } from "./optimize.js";
 
 export function grammer2arbitrary({ baseRules, exportName, raw }) {
   const rules = parseGrammar(raw);
   validate({ baseRules, rules });
+  optimizeRules(rules);
   const code = generateSourceCode({ baseRules, exportName, rules });
   return code;
 }
@@ -20,6 +22,13 @@ function validate({ baseRules, rules }) {
 
 Available rule(s): ${Array.from(rules.keys()).join(", ")}
 Specified base(s): ${baseRules.join(", ")}`);
+  }
+}
+
+function optimizeRules(rules) {
+  for (const [name, rule] of rules.entries()) {
+    const optimized = optimize(rule);
+    rules.set(name, optimized);
   }
 }
 
