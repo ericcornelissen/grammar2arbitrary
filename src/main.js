@@ -34,33 +34,41 @@ function optimizeRules(rules) {
 }
 
 function generateSourceCode({ baseRules, exportName, rules }) {
+  const internalRules = Array.from(rules.entries()).filter(
+    ([, rule]) => !(rule instanceof External),
+  );
+  const externalRules = Array.from(rules.entries()).filter(
+    ([, rule]) => rule instanceof External,
+  );
+
+  const bases = baseRules.map((baseRule) => `tie("${baseRule}")`);
+  const internals = internalRules
+    .map(([name, rule]) => [name, toArbitrary(rule)])
+    .map(([name, arbitrary]) => `["${name}"]: ${arbitrary}`);
+  const externals = externalRules.map(
+    ([name, rule]) => `["${name}"]: ext[${rule.identifier}]`,
+  );
+  const externalMap = externalRules.map(
+    ([name, rule]) => `[${rule.identifier}]: externals["${name}"]`,
+  );
+
   return `import * as fc from "fast-check";
 
 var DEFAULT_OPTS = { size: "small" };
+var arbitrary = Symbol();
 
 export function ${exportName}(opts=DEFAULT_OPTS, externals) {
-	var arbitrary = Symbol();
 	var ext = {
-		${Array.from(rules.entries())
-      .filter(([, rule]) => rule instanceof External)
-      .map(([name, rule]) => `[${rule.identifier}]: externals["${name}"]`)
-      .join(",\n\t\t")}
+		${externalMap.join(",\n\t\t")}
 	};
 	return fc.letrec((tie) => {
 		return {
 			[arbitrary]: fc.oneof(
 				{ depthSize: opts.size || DEFAULT_OPTS.size },
-				${baseRules.map((baseRule) => `tie("${baseRule}")`).join(",\n\t\t\t\t")}
+				${bases.join(",\n\t\t\t\t")}
 			),
-			${Array.from(rules.entries())
-        .filter(([, rule]) => !(rule instanceof External))
-        .map(([name, rule]) => [name, toArbitrary(rule)])
-        .map(([name, arbitrary]) => `["${name}"]: ${arbitrary}`)
-        .join(",\n\t\t\t")},
-			${Array.from(rules.entries())
-        .filter(([, rule]) => rule instanceof External)
-        .map(([name, rule]) => `["${name}"]: ext[${rule.identifier}]`)
-        .join(",\n\t\t\t")}
+			${internals.join(",\n\t\t\t")},
+			${externals.join(",\n\t\t\t")}
 		};
 	})[arbitrary];
 }
