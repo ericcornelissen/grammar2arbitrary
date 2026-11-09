@@ -6,6 +6,7 @@ import { suite, test } from "node:test";
 import { Not } from "../src/constraints.js";
 import {
   Apply,
+  External,
   OneOf,
   Optional,
   Repeat,
@@ -25,6 +26,16 @@ suite("optimize", () => {
     "Apply with constraint": {
       term: new Apply("Foo").withConstraint(new Not(["bar"])),
       want: new Apply("Foo").withConstraint(new Not(["bar"])),
+    },
+
+    /* External */
+    "External without constraint": {
+      term: new External(42),
+      want: new External(42),
+    },
+    "External with constraint": {
+      term: new External(67).withConstraint(new Not(["bar"])),
+      want: new External(67).withConstraint(new Not(["bar"])),
     },
 
     /* OneOf */

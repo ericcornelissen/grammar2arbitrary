@@ -6,6 +6,7 @@ import { suite, test } from "node:test";
 import { Not } from "../src/constraints.js";
 import {
   Apply,
+  External,
   OneOf,
   Optional,
   Repeat,
@@ -173,6 +174,14 @@ suite("parseConstraint", () => {
             new OneOf([new Terminal("foo"), new Terminal("bar")]),
           ],
         ]),
+      },
+      "external rule": {
+        input: `
+          TestGrammar {
+            external =
+          }
+        `,
+        want: new Map([["external", new External(58)]]),
       },
     };
 

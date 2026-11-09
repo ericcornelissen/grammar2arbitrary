@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: Apache-2.0
+
+Bash {
+  LocalOrExternal
+    = Local
+    | External
+
+  Local
+    = "foo" | "bar"
+
+  External
+    =
+}

@@ -7,6 +7,7 @@ import { None, Not } from "../src/constraints.js";
 
 import {
   Apply,
+  External,
   OneOf,
   Optional,
   Repeat,
@@ -48,6 +49,11 @@ suite("terms", () => {
         b: new Apply("Foo").withConstraint(new Not(["baz"])),
         want: false,
       },
+      "Apply and External": {
+        a: new Apply("Foobar"),
+        b: new External(42),
+        want: false,
+      },
       "Apply and OneOf": {
         a: new Apply("Foobar"),
         b: new OneOf([new Apply("Foo"), new Apply("Bar")]),
@@ -70,6 +76,68 @@ suite("terms", () => {
       },
       "Apply and Terminal": {
         a: new Apply("Foobar"),
+        b: new Terminal("Foobar"),
+        want: false,
+      },
+
+      /* External */
+      "External and External, identical": {
+        a: new External(42),
+        b: new External(42),
+        want: true,
+      },
+      "External and External, different": {
+        a: new External(42),
+        b: new External(67),
+        want: false,
+      },
+      "External with constraint and External": {
+        a: new External(42).withConstraint(new Not(["bar"])),
+        b: new External(42),
+        want: false,
+      },
+      "External and External with constraint": {
+        a: new External(42),
+        b: new External(42).withConstraint(new Not(["bar"])),
+        want: false,
+      },
+      "External with constraint and External with constraint, identical": {
+        a: new External(42).withConstraint(new Not(["bar"])),
+        b: new External(42).withConstraint(new Not(["bar"])),
+        want: true,
+      },
+      "External with constraint and External with constraint, different": {
+        a: new External(42).withConstraint(new Not(["bar"])),
+        b: new External(42).withConstraint(new Not(["baz"])),
+        want: false,
+      },
+      "External and Apply": {
+        a: new External(42),
+        b: new Apply("Foobar"),
+        want: false,
+      },
+      "External and OneOf": {
+        a: new External(42),
+        b: new OneOf([new Terminal("Foo"), new Terminal("Bar")]),
+        want: false,
+      },
+      "External and Optional": {
+        a: new External(42),
+        b: new Optional(new Terminal("Foobar")),
+        want: false,
+      },
+      "External and Repeat": {
+        a: new External(42),
+        b: new Repeat(new Terminal("Foobar"), { min: 1 }),
+        want: false,
+      },
+      "External and Sequence": {
+        a: new External(42),
+        b: new Sequence([new Terminal("Foo"), new Terminal("Bar")]),
+        want: false,
+      },
+      "External and Terminal": {
+        a: new External(42),
         b: new Terminal("Foobar"),
         want: false,
       },
@@ -120,6 +188,11 @@ suite("terms", () => {
       "OneOf and Apply": {
         a: new OneOf([new Terminal("foo"), new Terminal("bar")]),
         b: new Apply("Foobar"),
+        want: false,
+      },
+      "OneOf and External": {
+        a: new OneOf([new Terminal("foo"), new Terminal("bar")]),
+        b: new External(42),
         want: false,
       },
       "OneOf and Optional": {
@@ -189,6 +262,11 @@ suite("terms", () => {
       "Optional and Apply": {
         a: new Optional(new Terminal("foobar")),
         b: new Apply("Foobar"),
+        want: false,
+      },
+      "Optional and External": {
+        a: new Optional(new Terminal("foobar")),
+        b: new External(42),
         want: false,
       },
       "Optional and OneOf": {
@@ -270,6 +348,11 @@ suite("terms", () => {
         b: new Apply("Foobar"),
         want: false,
       },
+      "Repeat and External": {
+        a: new Repeat(new Terminal("foobar"), { min: 0 }),
+        b: new External(42),
+        want: false,
+      },
       "Repeat and OneOf": {
         a: new Repeat(new Terminal("foobar"), { min: 0 }),
         b: new OneOf([new Terminal("foo"), new Terminal("bar")]),
@@ -345,6 +428,11 @@ suite("terms", () => {
         b: new Apply("Foobar"),
         want: false,
       },
+      "Sequence and External": {
+        a: new Sequence([new Terminal("foo"), new Terminal("bar")]),
+        b: new External(42),
+        want: false,
+      },
       "Sequence and OneOf": {
         a: new Sequence([new Terminal("foo"), new Terminal("bar")]),
         b: new OneOf([new Terminal("foo"), new Terminal("bar")]),
@@ -402,6 +490,11 @@ suite("terms", () => {
         b: new Apply("Foobar"),
         want: false,
       },
+      "Terminal and External": {
+        a: new Terminal("foobar"),
+        b: new External(42),
+        want: false,
+      },
       "Terminal and OneOf": {
         a: new Terminal("foobar"),
         b: new OneOf([new Terminal("foo"), new Terminal("bar")]),
@@ -450,6 +543,23 @@ suite("terms", () => {
           subject: new Apply("Foobar"),
           property: "identifier",
           assert: (got) => assert.equal(got, "Foobar"),
+        },
+
+        /* External */
+        "External#constraint, default": {
+          subject: new External(42),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new None())),
+        },
+        "External#constraint, set": {
+          subject: new External(67).withConstraint(new Not(["foobar"])),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new Not(["foobar"]))),
+        },
+        "External#identifier": {
+          subject: new External(3.14),
+          property: "identifier",
+          assert: (got) => assert.equal(got, 3.14),
         },
 
         /* OneOf */
@@ -582,6 +692,20 @@ suite("terms", () => {
         },
         "Apply#identifier": {
           subject: new Apply("Foobar"),
+          property: "identifier",
+          value: "Foobaz",
+          want: /^TypeError: Cannot set property identifier /,
+        },
+
+        /* External */
+        "External#constraint": {
+          subject: new External(42),
+          property: "constraint",
+          value: new None(),
+          want: /^TypeError: Cannot set property constraint /,
+        },
+        "External#identifier": {
+          subject: new External(67),
           property: "identifier",
           value: "Foobaz",
           want: /^TypeError: Cannot set property identifier /,
