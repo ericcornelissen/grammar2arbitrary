@@ -27,7 +27,7 @@ Specified base(s): ${baseRules.join(", ")}`);
 
 function optimizeRules(rules) {
   for (const [name, rule] of rules.entries()) {
-    const optimized = optimize(rule);
+    const optimized = optimize(rule, rules);
     rules.set(name, optimized);
   }
 }
