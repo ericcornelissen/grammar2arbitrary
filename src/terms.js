@@ -25,6 +25,7 @@ class Term {
 
   withConstraint(constraint) {
     assert(constraint instanceof Constraint);
+    assert(this.#constraint instanceof None);
 
     this.#constraint = constraint;
     return this;
