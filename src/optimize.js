@@ -2,11 +2,22 @@
 
 import assert from "node:assert";
 
-import { Apply, OneOf, Optional, Repeat, Sequence, Terminal } from "./terms.js";
+import {
+  Apply,
+  External,
+  OneOf,
+  Optional,
+  Repeat,
+  Sequence,
+  Terminal,
+} from "./terms.js";
 
 export function optimize(rule) {
   switch (true) {
     case rule instanceof Apply: {
+      return rule;
+    }
+    case rule instanceof External: {
       return rule;
     }
     case rule instanceof OneOf: {

@@ -29,3 +29,31 @@ test("testdata/example.ohm", async () => {
     }),
   );
 });
+
+test("testdata/externals.ohm", async () => {
+  rm("testdata/externals.js", { force: true });
+
+  const { status } = spawnSync("./bin.js", [
+    "--base",
+    "LocalOrExternal",
+    "--export",
+    "example",
+    "--inFile",
+    "testdata/externals.ohm",
+    "--outFile",
+    "testdata/externals.js",
+  ]);
+  assert.equal(status, 0);
+
+  const opts = {};
+  const externals = {
+    External: fc.constant("baz"),
+  };
+
+  const { example } = await import("./testdata/externals.js");
+  fc.assert(
+    fc.property(example(opts, externals), (value) => {
+      assert.ok(["foo", "bar", "baz"].includes(value));
+    }),
+  );
+});
