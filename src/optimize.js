@@ -2,6 +2,7 @@
 
 import assert from "node:assert";
 
+import { None } from "./constraints.js";
 import {
   Apply,
   External,
@@ -88,6 +89,10 @@ export function optimize(rule) {
 }
 
 function merge(a, b) {
+  if (!(a.constraint instanceof None) || !(b.constraint instanceof None)) {
+    return null;
+  }
+
   switch (true) {
     case a instanceof Apply: {
       return null;
