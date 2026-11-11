@@ -52,12 +52,9 @@ function generateSourceCode({ baseRules, exportName, rules }) {
     ([name, rule]) => `[${rule.identifier}]: externals["${name}"]`,
   );
 
-  return `import * as fc from "fast-check";
-
-var DEFAULT_OPTS = { size: "small" };
-var arbitrary = Symbol();
-
-export function ${exportName}(opts=DEFAULT_OPTS, externals) {
+  const arbitrary =
+    externalRules.length > 0
+      ? `export function ${exportName}(opts=DEFAULT_OPTS, externals) {
 	var ext = {
 		${externalMap.join(",\n\t\t")}
 	};
@@ -71,6 +68,24 @@ export function ${exportName}(opts=DEFAULT_OPTS, externals) {
 			${externals.join(",\n\t\t\t")}
 		};
 	})[arbitrary];
-}
+}`
+      : `export function ${exportName}(opts=DEFAULT_OPTS) {
+	return fc.letrec((tie) => {
+		return {
+			[arbitrary]: fc.oneof(
+				{ depthSize: opts.size || DEFAULT_OPTS.size },
+				${bases.join(",\n\t\t\t\t")}
+			),
+			${internals.join(",\n\t\t\t")}
+		};
+	})[arbitrary];
+}`;
+
+  return `import * as fc from "fast-check";
+
+var DEFAULT_OPTS = { size: "small" };
+var arbitrary = Symbol();
+
+${arbitrary}
 `;
 }
