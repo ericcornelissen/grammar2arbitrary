@@ -1,0 +1,223 @@
+// SPDX-License-Identifier: Apache-2.0
+
+// Based on <https://www.json.org/>, see original below.
+JSON {
+  Json
+    = Element
+
+  Value
+    = Object
+    | Array
+    | String
+    | Number
+    | "true"
+    | "false"
+    | "null"
+
+  Object
+    = "{" Whitespace "}"  -- Empty
+    | "{" Members "}"     -- NonEmpty
+
+  Members
+    = Member              -- Single
+    | Member "," Members  -- Multiple
+
+  Member
+    = Whitespace String Whitespace ":" Element
+
+  Array
+    = "[" Whitespace "]"  -- Empty
+    | "[" Elements "]"    -- NonEmpty
+
+  Elements
+    = Element               -- Single
+    | Element "," Elements  -- Multiple
+
+  Element
+    = Whitespace Value Whitespace
+
+  String
+    = "\"" Characters "\""
+
+  Characters
+    = ""                    -- Empty
+    | Character Characters  -- NonEmpty
+
+  Character
+    = Alpha          -- v1
+    | Digit          -- v2
+    | " "            -- v3
+    | ("\\" Escape)  -- Escaped
+
+  Escape
+    = "\""                 -- DoubleQuote
+    | "\\"                 -- Backslash
+    | "/"                  -- ForwardSlash
+    | "b"                  -- Backspace
+    | "f"                  -- FormFeed
+    | "n"                  -- LineFeed
+    | "r"                  -- CarriageReturn
+    | "t"                  -- HorizontalTab
+    | "u" Hex Hex Hex Hex  -- Unicode
+
+  Hex
+    = Digit
+    | "A" | "B" | "C" | "D" | "E" | "F"
+    | "a" | "b" | "c" | "d" | "e" | "f"
+
+  Number
+    = Integer Fraction Exponent
+
+  Integer
+    = Digit               -- ZeroToNine
+    | OneNine Digits      -- TenToInfinit
+    | "-" Digit           -- MinusNineToZero
+    | "-" OneNine Digits  -- MinusInfinityToMinusTen
+
+  Digits
+    = Digit         -- Single
+    | Digit Digits  -- Multiple
+
+  Digit
+    = "0"
+    | OneNine
+
+  OneNine
+    = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+  Fraction
+    = ""          -- Absent
+    | "." Digits  -- Fraction
+
+  Exponent
+    = ""               -- Absent
+    | "E" Sign Digits  -- UppercaseE
+    | "e" Sign Digits  -- LowercaseE
+
+  Sign
+    = "" | "+" | "-"
+
+  Whitespace
+    = ""                   -- Empty
+    | "\u0020" Whitespace  -- Space
+    | "\u000A" Whitespace  -- LineFeed
+    | "\u000D" Whitespace  -- CarriageReturn
+    | "\u0009" Whitespace  -- HorizontalTab
+
+  // Extra because ranges are not supported
+
+  Alpha
+    = Lower | Upper
+
+  Lower
+    = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l"
+    | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x"
+    | "y" | "z"
+
+  Upper
+    = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L"
+    | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T" | "U" | "V" | "W" | "X"
+    | "Y" | "Z"
+}
+
+// json
+//    element
+//
+// value
+//    object
+//    array
+//    string
+//    number
+//    "true"
+//    "false"
+//    "null"
+//
+// object
+//     '{' ws '}'
+//     '{' members '}'
+//
+// members
+//     member
+//     member ',' members
+//
+// member
+//     ws string ws ':' element
+//
+// array
+//     '[' ws ']'
+//     '[' elements ']'
+//
+// elements
+//     element
+//     element ',' elements
+//
+// element
+//     ws value ws
+//
+// string
+// '"' characters '"'
+//
+// characters
+//     ""
+//     character characters
+//
+// character
+//     '0020' . '10FFFF' - '"' - '\'
+// '\' escape
+//
+// escape
+//     '"'
+//     '\'
+//     '/'
+//     'b'
+//     'f'
+//     'n'
+//     'r'
+//     't'
+//     'u' hex hex hex hex
+//
+// hex
+//     digit
+//     'A' . 'F'
+//     'a' . 'f'
+//
+// number
+//     integer fraction exponent
+//
+// integer
+//     digit
+//     onenine digits
+//     '-' digit
+//     '-' onenine digits
+//
+// digits
+//     digit
+//     digit digits
+//
+// digit
+//     '0'
+//     onenine
+//
+// onenine
+//     '1' . '9'
+//
+// fraction
+//     ""
+//     '.' digits
+//
+// exponent
+//     ""
+//     'E' sign digits
+//     'e' sign digits
+//
+// sign
+//     ""
+//     '+'
+//     '-'
+//
+// ws
+//     ""
+//     '0020' ws
+//     '000A' ws
+//     '000D' ws
+//     '0009' ws

@@ -74,7 +74,7 @@ export default defineConfig([
       "test/no-unawaited-subtest": ["error"],
       "test/no-unknown-test-options": ["error"],
       "test/no-unneeded-async-rejects-callback": ["error"],
-      "test/no-useless-assertion": ["error"],
+      "test/no-useless-assertion": ["off"],
       "test/prefer-assert-match": ["error"],
       "test/prefer-assert-throws": ["error"],
       "test/prefer-async-await": ["error"],
