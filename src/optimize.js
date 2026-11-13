@@ -13,7 +13,7 @@ import {
   Terminal,
 } from "./terms.js";
 
-export function optimize(rule) {
+export function optimize(rule, all) {
   switch (true) {
     case rule instanceof Apply: {
       return rule;
@@ -23,7 +23,7 @@ export function optimize(rule) {
     }
     case rule instanceof OneOf: {
       const constraint = rule.constraint;
-      const subjects = rule.options.map((option) => optimize(option));
+      const subjects = rule.options.map((option) => optimize(option, all));
       return new OneOf(subjects).withConstraint(constraint);
     }
     case rule instanceof Optional: {
@@ -33,24 +33,29 @@ export function optimize(rule) {
       while (subject instanceof Optional) {
         subject = subject.option;
       }
-      subject = optimize(subject);
+      subject = optimize(subject, all);
 
       return new Optional(subject).withConstraint(constraint);
     }
     case rule instanceof Repeat: {
       const constraint = rule.constraint;
       const parameters = rule.parameters;
-      const subject = optimize(rule.subject);
+      const subject = optimize(rule.subject, all);
       return new Repeat(subject, parameters).withConstraint(constraint);
     }
     case rule instanceof Sequence: {
       if (rule.subjects.length === 1) {
-        return optimize(rule.subjects[0]);
+        return optimize(rule.subjects[0], all);
       }
 
       const flattened = [];
       for (const subject of rule.subjects) {
-        if (subject instanceof Sequence) {
+        if (
+          subject instanceof Apply &&
+          all.get(subject.identifier) instanceof Sequence
+        ) {
+          flattened.push(...all.get(subject.identifier).subjects);
+        } else if (subject instanceof Sequence) {
           flattened.push(...subject.subjects);
         } else {
           flattened.push(subject);
@@ -61,7 +66,10 @@ export function optimize(rule) {
       let [previous, current] = [];
       for (current of flattened) {
         if (previous) {
-          const merged = merge(previous, current);
+          const merged = merge(
+            previous instanceof Apply ? all.get(previous.identifier) : previous,
+            current,
+          );
           if (merged) {
             current = merged;
           } else {
@@ -77,7 +85,7 @@ export function optimize(rule) {
       if (rule.equals(optimized)) {
         return rule;
       } else {
-        return optimize(optimized);
+        return optimize(optimized, all);
       }
     }
     case rule instanceof Terminal: {

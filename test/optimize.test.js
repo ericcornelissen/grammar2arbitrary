@@ -141,6 +141,34 @@ suite("optimize", () => {
         new Apply("ruleBar"),
         new Terminal("Hello world!"),
       ]),
+      rules: new Map([
+        ["ruleFoo", new Apply("ruleFoo")],
+        ["ruleBar", new Apply("ruleBar")],
+      ]),
+    },
+    "Sequence of sequence of sequence": {
+      term: new Sequence([
+        new Terminal("a"),
+        new Sequence([
+          new Terminal("b"),
+          new Sequence([new Terminal("c")]),
+          new Terminal("d"),
+        ]),
+        new Terminal("e"),
+      ]),
+      want: new Terminal("abcde"),
+    },
+    "Sequence with Apply->Terminal": {
+      term: new Sequence([new Apply("Foo"), new Terminal("bar")]),
+      want: new Terminal("foobar"),
+      rules: new Map([["Foo", new Terminal("foo")]]),
+    },
+    "Sequence with Apply->Sequence": {
+      term: new Sequence([new Apply("Pre"), new Terminal("alakazam")]),
+      want: new Terminal("abrakadabraalakazam"),
+      rules: new Map([
+        ["Pre", new Sequence([new Terminal("abra"), new Terminal("kadabra")])],
+      ]),
     },
     "Sequence of constrained and unconstrained repetition": {
       term: new Sequence([
@@ -186,7 +214,9 @@ suite("optimize", () => {
     test(name, () => {
       const { term, want } = testcase;
 
-      const got = optimize(term);
+      const all = testcase.rules ?? new Map();
+
+      const got = optimize(term, all);
       assert.ok(got.equals(want));
     });
   }
