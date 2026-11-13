@@ -6,8 +6,11 @@ The [Ohm] language can be used to write grammars that `grammar2arbitrary` can
 generate [fast-check] arbitraries for. This document describes how this can be
 done and covers limitations and differences with Ohm for parsing.
 
+See the [testdata] for example Ohm grammars.
+
 [fast-check]: https://fast-check.dev/ "fast check"
 [ohm]: https://ohmjs.org/
+[testdata]: ../testdata
 
 ## Defining a Grammar
 

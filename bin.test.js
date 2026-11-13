@@ -57,3 +57,28 @@ test("testdata/externals.ohm", async () => {
     }),
   );
 });
+
+test("testdata/json.ohm", async () => {
+  rm("testdata/json.js", { force: true });
+
+  const { status } = spawnSync("./bin.js", [
+    "--base",
+    "Json",
+    "--export",
+    "example",
+    "--inFile",
+    "testdata/json.ohm",
+    "--outFile",
+    "testdata/json.js",
+  ]);
+  assert.equal(status, 0);
+
+  const { example } = await import("./testdata/json.js");
+  fc.assert(
+    fc.property(example(), (value) => {
+      assert.doesNotThrow(() => {
+        JSON.parse(value);
+      });
+    }),
+  );
+});
