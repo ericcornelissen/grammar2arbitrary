@@ -78,6 +78,41 @@ suite("parseConstraint", () => {
           ],
         ]),
       },
+      "rule with range": {
+        input: `
+          TestGrammar {
+            LowerHex = "0".."9"
+                     | "a".."f"
+          }
+        `,
+        want: new Map([
+          [
+            "LowerHex",
+            new OneOf([
+              new OneOf([
+                new Terminal("0"),
+                new Terminal("1"),
+                new Terminal("2"),
+                new Terminal("3"),
+                new Terminal("4"),
+                new Terminal("5"),
+                new Terminal("6"),
+                new Terminal("7"),
+                new Terminal("8"),
+                new Terminal("9"),
+              ]),
+              new OneOf([
+                new Terminal("a"),
+                new Terminal("b"),
+                new Terminal("c"),
+                new Terminal("d"),
+                new Terminal("e"),
+                new Terminal("f"),
+              ]),
+            ]),
+          ],
+        ]),
+      },
       "rule with repeat, 0-or-more": {
         input: `
           TestGrammar {
@@ -205,6 +240,14 @@ suite("parseConstraint", () => {
         input: `
           TestGrammar {
             NegativeLookahead = ~ "n/a"
+          }
+        `,
+      },
+      "negative range": {
+        want: /^Error: Cannot range from 'z' to 'a'$/,
+        input: `
+          TestGrammar {
+            NegativeRange = "z".."a"
           }
         `,
       },
