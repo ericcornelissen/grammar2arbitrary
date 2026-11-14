@@ -44,10 +44,9 @@ JSON {
     | Character Characters  -- NonEmpty
 
   Character
-    = Alpha          -- v1
-    | Digit          -- v2
-    | " "            -- v3
-    | ("\\" Escape)  -- Escaped
+    = "\u0020".."\u0021"  -- UpToDoubleQuote
+    | "\u0023".."\u0100"  -- BeyondDoubleQuote
+    | ("\\" Escape)       -- Escaped
 
   Escape
     = "\""                 -- DoubleQuote
@@ -62,8 +61,8 @@ JSON {
 
   Hex
     = Digit
-    | "A" | "B" | "C" | "D" | "E" | "F"
-    | "a" | "b" | "c" | "d" | "e" | "f"
+    | "A".."F"
+    | "a".."f"
 
   Number
     = Integer Fraction Exponent
@@ -83,7 +82,7 @@ JSON {
     | OneNine
 
   OneNine
-    = "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+    = "1".."9"
 
   Fraction
     = ""          -- Absent
