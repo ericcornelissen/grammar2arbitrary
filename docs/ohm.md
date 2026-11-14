@@ -48,6 +48,12 @@ Example {
   Cases = BaseRule                   -- case1
         | BaseRule Optional          -- case2
         | Application "-" Optional   -- case3
+
+
+  // Terms can be a range of characters
+  Range = "a".."z"
+  // The resulting arbitrary generates strings consisting of any characters from
+  // "a" to "z" (including).
 }
 ```
 
@@ -103,6 +109,8 @@ provide all external rule definitions in the second argument and return the
 arbitrary:
 
 ```javascript
+import * as fc from "fast-check";
+
 import { example } from "./example.js";
 
 export function wrapper(options) {

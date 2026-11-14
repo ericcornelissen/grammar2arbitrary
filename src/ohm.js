@@ -55,6 +55,23 @@ function ohmTermToAbstractTerm(term) {
     case term instanceof ohm.pexprs.Plus: {
       return new Repeat(ohmTermToAbstractTerm(term.expr), { min: 1 });
     }
+    case term instanceof ohm.pexprs.Range: {
+      // `term.from.length == 1` and `term.to.length == 1` are enforced by Ohm
+
+      const start = term.from.charCodeAt(0);
+      const end = term.to.charCodeAt(0);
+      if (start >= end) {
+        throw new Error(`Cannot range from '${term.from}' to '${term.to}'`);
+      }
+
+      const options = [];
+      for (let charCode = start; charCode <= end; charCode++) {
+        const character = String.fromCharCode(charCode);
+        options[charCode - start] = new Terminal(character);
+      }
+
+      return new OneOf(options);
+    }
     case term instanceof ohm.pexprs.Seq: {
       if (term.factors.length === 0) {
         return new External(term.source.startIdx);

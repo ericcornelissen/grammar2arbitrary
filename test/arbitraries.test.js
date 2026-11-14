@@ -21,6 +21,26 @@ suite("toArbitrary", () => {
       term: new Terminal("foobar"),
       want: `fc.constant("foobar")`,
     },
+    "terminal with backslash": {
+      term: new Terminal("a\\b"),
+      want: `fc.constant("a\\\\b")`,
+    },
+    "terminal with double quote": {
+      term: new Terminal('a"b'),
+      want: `fc.constant("a\\"b")`,
+    },
+    "terminal with line feed": {
+      term: new Terminal("a\nb"),
+      want: `fc.constant("a\\nb")`,
+    },
+    "terminal with carriage return": {
+      term: new Terminal("a\rb"),
+      want: `fc.constant("a\\rb")`,
+    },
+    "terminal with horizontal tab": {
+      term: new Terminal("a\tb"),
+      want: `fc.constant("a\\tb")`,
+    },
     "rule application": {
       term: new Apply("ruleFoobar"),
       want: `tie("ruleFoobar")`,
@@ -44,6 +64,16 @@ suite("toArbitrary", () => {
     "alteration of terminals": {
       term: new OneOf([new Terminal("foo"), new Terminal("bar")]),
       want: `fc.constantFrom("foo","bar")`,
+    },
+    "alteration of terminals with special characters": {
+      term: new OneOf([
+        new Terminal("a\\b"),
+        new Terminal('a"b'),
+        new Terminal("a\nb"),
+        new Terminal("a\rb"),
+        new Terminal("a\tb"),
+      ]),
+      want: `fc.constantFrom("a\\\\b","a\\"b","a\\nb","a\\rb","a\\tb")`,
     },
     "alteration of rules": {
       term: new OneOf([new Apply("ruleFoo"), new Apply("ruleBar")]),

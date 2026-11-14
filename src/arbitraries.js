@@ -21,6 +21,7 @@ function ruleToArbitrary(rule) {
       if (rule.options.every((option) => option instanceof Terminal)) {
         const options = rule.options
           .map((terminal) => terminal.term)
+          .map(escapeTerminal)
           .join('","');
         return `fc.constantFrom("${options}")`;
       } else {
@@ -46,11 +47,7 @@ function ruleToArbitrary(rule) {
       return `fc.tuple(${subjects}).map(array=>array.join(""))`;
     }
     case rule instanceof Terminal: {
-      const value = rule.term
-        .replaceAll(/(["\\])/g, "\\$1")
-        .replace(/\n/g, "\\n")
-        .replace(/\r/g, "\\r")
-        .replace(/\t/g, "\\t");
+      const value = escapeTerminal(rule.term);
       return `fc.constant("${value}")`;
     }
     default: {
@@ -73,4 +70,12 @@ function constraintToArbitrary(constraint) {
       assert(false);
     }
   }
+}
+
+function escapeTerminal(term) {
+  return term
+    .replaceAll(/(["\\])/g, "\\$1")
+    .replaceAll(/\n/g, "\\n")
+    .replaceAll(/\r/g, "\\r")
+    .replaceAll(/\t/g, "\\t");
 }
