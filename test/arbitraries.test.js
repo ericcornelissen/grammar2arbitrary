@@ -8,6 +8,7 @@ import {
   Apply,
   OneOf,
   Optional,
+  Range,
   Repeat,
   Sequence,
   Terminal,
@@ -82,6 +83,10 @@ suite("toArbitrary", () => {
     "alteration of rules and terminals": {
       term: new OneOf([new Apply("foo"), new Terminal("-"), new Apply("bar")]),
       want: `fc.oneof(tie("foo"),fc.constant("-"),tie("bar"))`,
+    },
+    range: {
+      term: new Range(3, 14),
+      want: `fc.integer({min:3,max:14}).map(String.fromCharCode)`,
     },
     "0-or-1 terminal": {
       term: new Optional(new Terminal("foobar")),

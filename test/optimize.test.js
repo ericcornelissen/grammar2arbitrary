@@ -9,6 +9,7 @@ import {
   External,
   OneOf,
   Optional,
+  Range,
   Repeat,
   Sequence,
   Terminal,
@@ -84,6 +85,16 @@ suite("optimize", () => {
     "Optional of Optional": {
       term: new Optional(new Optional(new Terminal("foobar"))),
       want: new Optional(new Terminal("foobar")),
+    },
+
+    /* Range */
+    "Range without constraint": {
+      term: new Range(3, 14),
+      want: new Range(3, 14),
+    },
+    "Range with constraint": {
+      term: new Range(3, 14).withConstraint(new Not(["a"])),
+      want: new Range(3, 14).withConstraint(new Not(["a"])),
     },
 
     /* Repeat */

@@ -8,6 +8,7 @@ import {
   External,
   OneOf,
   Optional,
+  Range,
   Repeat,
   Sequence,
   Terminal,
@@ -36,6 +37,9 @@ export function optimize(rule) {
       subject = optimize(subject);
 
       return new Optional(subject).withConstraint(constraint);
+    }
+    case rule instanceof Range: {
+      return rule;
     }
     case rule instanceof Repeat: {
       const constraint = rule.constraint;
@@ -101,6 +105,9 @@ function merge(a, b) {
       return null;
     }
     case a instanceof Optional: {
+      return null;
+    }
+    case a instanceof Range: {
       return null;
     }
     case a instanceof Repeat: {

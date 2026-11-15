@@ -10,6 +10,7 @@ import {
   External,
   OneOf,
   Optional,
+  Range,
   Repeat,
   Sequence,
   Terminal,
@@ -64,13 +65,7 @@ function ohmTermToAbstractTerm(term) {
         throw new Error(`Cannot range from '${term.from}' to '${term.to}'`);
       }
 
-      const options = [];
-      for (let charCode = start; charCode <= end; charCode++) {
-        const character = String.fromCharCode(charCode);
-        options[charCode - start] = new Terminal(character);
-      }
-
-      return new OneOf(options);
+      return new Range(start, end);
     }
     case term instanceof ohm.pexprs.Seq: {
       if (term.factors.length === 0) {
