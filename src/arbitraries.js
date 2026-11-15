@@ -49,8 +49,7 @@ function ruleToArbitrary(rule) {
       const value = rule.term
         .replaceAll(/(["\\])/g, "\\$1")
         .replace(/\n/g, "\\n")
-        .replace(/\r/g, "\\r")
-        .replace(/\t/g, "\\t");
+        .replace(/\r/g, "\\r");
       return `fc.constant("${value}")`;
     }
     default: {
