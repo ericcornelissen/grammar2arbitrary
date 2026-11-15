@@ -10,6 +10,7 @@ import {
   External,
   OneOf,
   Optional,
+  Range,
   Repeat,
   Sequence,
   Terminal,
@@ -62,6 +63,11 @@ suite("terms", () => {
       "Apply and Optional": {
         a: new Apply("Foobar"),
         b: new Optional(new Apply("Foobar")),
+        want: false,
+      },
+      "Apply and Range": {
+        a: new Apply("Foobar"),
+        b: new Range(3, 14),
         want: false,
       },
       "Apply and Repeat": {
@@ -124,6 +130,11 @@ suite("terms", () => {
       "External and Optional": {
         a: new External(42),
         b: new Optional(new Terminal("Foobar")),
+        want: false,
+      },
+      "External and Range": {
+        a: new External(42),
+        b: new Range(3, 14),
         want: false,
       },
       "External and Repeat": {
@@ -200,6 +211,11 @@ suite("terms", () => {
         b: new Optional(new Terminal("foobar")),
         want: false,
       },
+      "OneOf and Range": {
+        a: new OneOf([new Terminal("foo"), new Terminal("bar")]),
+        b: new Range(3, 14),
+        want: false,
+      },
       "OneOf and Repeat": {
         a: new OneOf([new Terminal("foo"), new Terminal("bar")]),
         b: new Repeat(new Terminal("foobar"), { min: 1 }),
@@ -274,6 +290,11 @@ suite("terms", () => {
         b: new OneOf([new Terminal("foo"), new Terminal("bar")]),
         want: false,
       },
+      "Optional and Range": {
+        a: new Optional(new Terminal("foobar")),
+        b: new Range(3, 14),
+        want: false,
+      },
       "Optional and Repeat": {
         a: new Optional(new Terminal("foobar")),
         b: new Repeat(new Terminal("foobar"), { min: 1 }),
@@ -286,6 +307,83 @@ suite("terms", () => {
       },
       "Optional and Terminal": {
         a: new Optional(new Terminal("foobar")),
+        b: new Terminal("foobar"),
+        want: false,
+      },
+
+      /* Range */
+      "Range and Range, identical": {
+        a: new Range(3, 14),
+        b: new Range(3, 14),
+        want: true,
+      },
+      "Range and Range, different start": {
+        a: new Range(3, 14),
+        b: new Range(2, 14),
+        want: false,
+      },
+      "Range and Range, different end": {
+        a: new Range(3, 14),
+        b: new Range(3, 15),
+        want: false,
+      },
+      "Range and Range, different start and end": {
+        a: new Range(3, 14),
+        b: new Range(6, 7),
+        want: false,
+      },
+      "Range with constraint and Range": {
+        a: new Range(3, 14).withConstraint(new Not(["a"])),
+        b: new Range(3, 14),
+        want: false,
+      },
+      "Range and Range with constraint": {
+        a: new Range(3, 14),
+        b: new Range(3, 14).withConstraint(new Not(["b"])),
+        want: false,
+      },
+      "Range with constraint and Range with constraint, identical": {
+        a: new Range(3, 14).withConstraint(new Not(["a"])),
+        b: new Range(3, 14).withConstraint(new Not(["a"])),
+        want: true,
+      },
+      "Range with constraint and Range with constraint, different": {
+        a: new Range(3, 14).withConstraint(new Not(["a"])),
+        b: new Range(3, 14).withConstraint(new Not(["b"])),
+        want: false,
+      },
+      "Range and Apply": {
+        a: new Range(3, 14),
+        b: new Apply("Foobar"),
+        want: false,
+      },
+      "Range and External": {
+        a: new Range(3, 14),
+        b: new External(42),
+        want: false,
+      },
+      "Range and OneOf": {
+        a: new Range(3, 14),
+        b: new OneOf([new Terminal("foo"), new Terminal("bar")]),
+        want: false,
+      },
+      "Range and Optional": {
+        a: new Range(3, 14),
+        b: new Optional(new Terminal("foobar")),
+        want: false,
+      },
+      "Range and Repeat": {
+        a: new Range(3, 14),
+        b: new Repeat(new Terminal("foobar"), { min: 0 }),
+        want: false,
+      },
+      "Range and Sequence": {
+        a: new Range(3, 14),
+        b: new Sequence([new Terminal("foo"), new Terminal("bar")]),
+        want: false,
+      },
+      "Range and Terminal": {
+        a: new Range(3, 14),
         b: new Terminal("foobar"),
         want: false,
       },
@@ -361,6 +459,11 @@ suite("terms", () => {
       "Repeat and Optional": {
         a: new Repeat(new Terminal("foobar"), { min: 0 }),
         b: new Optional(new Terminal("foobar")),
+        want: false,
+      },
+      "Repeat and Range": {
+        a: new Repeat(new Terminal("foobar"), { min: 0 }),
+        b: new Range(3, 14),
         want: false,
       },
       "Repeat and Sequence": {
@@ -443,6 +546,11 @@ suite("terms", () => {
         b: new Optional(new Terminal("foobar")),
         want: false,
       },
+      "Sequence and Range": {
+        a: new Sequence([new Terminal("foo"), new Terminal("bar")]),
+        b: new Range(3, 14),
+        want: false,
+      },
       "Sequence and Repeat": {
         a: new Sequence([new Terminal("foo"), new Terminal("bar")]),
         b: new Repeat(new Terminal("foobar"), { min: 1 }),
@@ -503,6 +611,11 @@ suite("terms", () => {
       "Terminal and Optional": {
         a: new Terminal("foobar"),
         b: new Optional(new Terminal("foobar")),
+        want: false,
+      },
+      "Terminal and Range": {
+        a: new Terminal("foobar"),
+        b: new Range(3, 14),
         want: false,
       },
       "Terminal and Repeat": {
@@ -604,6 +717,23 @@ suite("terms", () => {
           subject: new Optional(new Terminal("foobar")),
           property: "option",
           assert: (got) => assert.ok(got.equals(new Terminal("foobar"))),
+        },
+
+        /* Range */
+        "Range#constraint, default": {
+          subject: new Range(3, 14),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new None())),
+        },
+        "Range#constraint, set": {
+          subject: new Range(3, 14).withConstraint(new Not(["a"])),
+          property: "constraint",
+          assert: (got) => assert.ok(got.equals(new Not(["a"]))),
+        },
+        "Range#range": {
+          subject: new Range(3, 14),
+          property: "range",
+          assert: (got) => assert.deepEqual(got, { start: 3, end: 14 }),
         },
 
         /* Repeat */
@@ -737,6 +867,20 @@ suite("terms", () => {
           property: "option",
           value: new Terminal("foobaz"),
           want: /^TypeError: Cannot set property option /,
+        },
+
+        /* Range */
+        "Range#constraint": {
+          subject: new Range(3, 14),
+          property: "constraint",
+          value: new None(),
+          want: /^TypeError: Cannot set property constraint /,
+        },
+        "Range#range": {
+          subject: new Range(3, 14),
+          property: "range",
+          value: { start: 6, end: 7 },
+          want: /^TypeError: Cannot set property range /,
         },
 
         /* Repeat */

@@ -45,7 +45,7 @@ JSON {
 
   Character
     = "\u0020".."\u0021"  -- UpToDoubleQuote
-    | "\u0023".."\u0100"  -- BeyondDoubleQuote
+    | "\u0023".."\uFFFF"  -- BeyondDoubleQuote
     | ("\\" Escape)       -- Escaped
 
   Escape

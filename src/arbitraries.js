@@ -3,7 +3,15 @@
 import assert from "node:assert";
 
 import { None, Not } from "./constraints.js";
-import { Apply, OneOf, Optional, Repeat, Sequence, Terminal } from "./terms.js";
+import {
+  Apply,
+  OneOf,
+  Optional,
+  Range,
+  Repeat,
+  Sequence,
+  Terminal,
+} from "./terms.js";
 
 export function toArbitrary(rule) {
   const arbitrary = ruleToArbitrary(rule);
@@ -34,6 +42,10 @@ function ruleToArbitrary(rule) {
     case rule instanceof Optional: {
       const option = toArbitrary(rule.option);
       return `fc.option(${option},{nil:""})`;
+    }
+    case rule instanceof Range: {
+      const { start, end } = rule.range;
+      return `fc.integer({min:${start},max:${end}}).map(String.fromCharCode)`;
     }
     case rule instanceof Repeat: {
       const { min } = rule.parameters;

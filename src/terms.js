@@ -133,6 +133,38 @@ export class Optional extends Term {
   }
 }
 
+export class Range extends Term {
+  #start;
+  #end;
+
+  constructor(start, end) {
+    super(secret);
+
+    assert(typeof start === "number");
+    assert(typeof end === "number");
+    assert(start < end);
+
+    this.#start = start;
+    this.#end = end;
+  }
+
+  get range() {
+    return {
+      start: this.#start,
+      end: this.#end,
+    };
+  }
+
+  equals(that) {
+    return (
+      that instanceof Range &&
+      this.#start === that.#start &&
+      this.#end === that.#end &&
+      super.equals(that)
+    );
+  }
+}
+
 export class Repeat extends Term {
   #min;
   #subject;
